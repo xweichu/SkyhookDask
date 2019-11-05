@@ -100,7 +100,7 @@ def preprocess(filename, ops):
     return commands
 
 def task_partition(filename):
-    sub_tasks = ['--start-obj 0 --num-objs 1 --wthreads 30 --qdepth 30 --use-cls', '--start-obj 1 --num-objs 2 --wthreads 30 --qdepth 30 --use-cls']
+    sub_tasks = ['--start-obj 0 --num-objs 1 --wthreads 30 --qdepth 30 --use-cls --header', '--start-obj 1 --num-objs 2 --wthreads 30 --qdepth 30 --use-cls']
     return sub_tasks
 
 def postprocess(futures):
