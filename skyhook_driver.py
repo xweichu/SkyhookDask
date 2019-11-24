@@ -6,11 +6,40 @@ import pyarrow as pa
 from StringIO import StringIO
 from pyarrow import csv
 
+
+class Coordinator:
+    limit = 0
+    ongoing = 0
+
+    def __init__(self, limit=2):
+        self.limit = limit
+        self.ongoing = 0
+
+    def increment(self, x=1):
+        if self.ongoing + x < self.limit:
+            self.ongoing += x
+            return True
+        return False
+    
+    def decrement(self):
+        if self.ongoing > 0 :
+            self.ongoing -= 1
+            return True
+        return False
+
+    def getleft(self):
+        return self.limit - self.ongoing
+
+def mergeTables(fu_arr):
+    postprocess(fu_arr)
+
+
 def exeQuery(filename,ops):
     def execute(command):
         import os
         result = os.popen(command).read()
         return result
+    
 
     client = Client('10.10.1.2:8786')
     commands = preprocess(filename,ops)
@@ -19,6 +48,7 @@ def exeQuery(filename,ops):
     for command in commands:
         future = client.submit(execute, command)
         futures.append(future)
+        
 
     resultCom = postprocess(futures)
     re = resultCom.to_pydict()
@@ -36,7 +66,6 @@ def getSchema(filename):
     future = client.submit(execute, command)
     result_str = future.result()
     lines = result_str.split('\n')
-
     tablename = ''
     schema_start = False
     fields = []
