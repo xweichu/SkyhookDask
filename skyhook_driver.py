@@ -291,6 +291,7 @@ def writeDataset(path , dst_type = 'root'):
     #https://jsonformatter.curiousconcept.com/
     with open('/users/xweichu/projects/pool/data.json', 'w') as outfile:
         json.dump(metadata, outfile)
+    return True
 
 
 def getDataset(name):
