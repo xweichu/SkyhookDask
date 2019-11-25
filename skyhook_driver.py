@@ -278,9 +278,10 @@ def writeDataset(path , dst_type = 'root'):
         
         metadata['files'].append(file_meta)
     
+    schemas = client.gather(futures)
     i = 0
     for item in metadata['files']:
-        item['file_schema'] = futures[i]
+        item['file_schema'] = schemas[i]
         i += 1
     
     metadata['size'] = total_size
