@@ -4,7 +4,7 @@ import uproot
 import dask.delayed
 import pyarrow as pa
 from pyarrow import csv
-from os import listdir,scandir
+from os import listdir
 from os.path import isfile, join
 from dask.distributed import Client
 
