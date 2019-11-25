@@ -278,7 +278,7 @@ def writeDataset(path , dst_type = 'root'):
         
         metadata['files'].append(file_meta)
     
-    client.collect(futures)
+    client.gather(futures)
     
     metadata['size'] = total_size
     
