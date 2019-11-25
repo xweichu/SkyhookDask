@@ -51,7 +51,7 @@ class SkyhookDM:
                 reader = pa.ipc.open_stream(bf)
                 batches = [b for b in reader]
                 table = pa.Table.from_batches(batches)
-                return table
+                return str(table.schema)
             
             futures = []
 
