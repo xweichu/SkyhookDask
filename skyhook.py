@@ -1,6 +1,5 @@
 #This is an example of client side skyhook library.
 #Copy to /usr/lib/python2.7/ so that it can be imported
-
 from dask.distributed import Client
 import dask.delayed
 from pyarrow import csv
@@ -26,12 +25,12 @@ class SkyhookDM:
         tb = pyarrow.Table.from_pydict(result)
         return tb
     
-    def getSchema(self, filename):
-        def runQuery(filename):
-            import skyhook_driver as sd
-            re = sd.getSchema(filename)
-            return re
+    # def getSchema(self, filename):
+    #     def runQuery(filename):
+    #         import skyhook_driver as sd
+    #         re = sd.getSchema(filename)
+    #         return re
 
-        fu = self.client.submit(runQuery, filename)
-        result = fu.result()
-        return result
+    #     fu = self.client.submit(runQuery, filename)
+    #     result = fu.result()
+    #     return result
