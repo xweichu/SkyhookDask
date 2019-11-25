@@ -32,25 +32,35 @@ class SkyhookDM:
         dataset = Dataset(data['dataset_name'], data['size'], files)
         return dataset
     
+    #Events;1.Jet_puId
+    #Events;1.SV_x
+    #testdata.nano_tree.root.Events;1.Muon_dzErr
+    
     def runQuery(self, obj, querystr):
         if 'File' in str(obj):
             obj_prefix = obj.dataset + '.' + obj.name
-            brs = querystr.split(',')
+            brs = querystr.split('project')[1].split()[0].split(',')
+
             objnames = []
             for br in brs:
                 objnames.append(obj_prefix + '.' + br)
 
             def runOnDriver(objname):
-                time.sleep(3)
-                print(objname)
-                return 1
+                tmppath = '/users/xweichu/projects/pool/'
+                bf = open(tmppath + objname, 'rb')
+                reader = pa.ipc.open_stream(bf)
+                batches = [b for b in reader]
+                table = pa.Table.from_batches(batches)
+                return table
             
             futures = []
 
             for objname in objnames:
                 futures.append(self.client.submit(runOnDriver,objname))
+
+            tables = self.client.gather(futures)
             
-            return self.client.gather(futures)
+            return tables
         return 0
                 
 
