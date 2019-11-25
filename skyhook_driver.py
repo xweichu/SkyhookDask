@@ -171,9 +171,9 @@ def writeDataset(path , dst_type = 'root'):
         sche_meta['2'] = bytes(0)
         #data format -> arrow
         sche_meta['3'] = bytes(5)
-        sche_meta['4'] = bytes('0' + ' ' + str(field.type) + ' 0 1 ' + str(branch.name), 'utf8')
+        sche_meta['4'] = bytes('0' + ' ' + str(field.type) + ' 0 1 ' + str(branch.name))
         sche_meta['5'] = bytes('n/a','utf8')
-        sche_meta['6'] = bytes(str(subnode.parent.name),'utf8')
+        sche_meta['6'] = bytes(str(subnode.parent.name))
         sche_meta['7'] = bytes(branch.numentries)
 
         schema.with_metadata(sche_meta)
