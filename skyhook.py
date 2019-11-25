@@ -33,7 +33,7 @@ class SkyhookDM:
         return dataset
     
     def runQuery(self, obj, querystr):
-        if 'File' in str(type(obj)):
+        if 'File' in str(obj):
             obj_prefix = obj.dataset + '.' + obj.name
             brs = querystr.split(',')
             objnames = []
@@ -42,6 +42,7 @@ class SkyhookDM:
 
             def runOnDriver(objname):
                 time.sleep(3)
+                print(objname)
                 return 1
             
             futures = []
