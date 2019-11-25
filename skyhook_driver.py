@@ -5,30 +5,8 @@ import dask.delayed
 import pyarrow as pa
 from StringIO import StringIO
 from pyarrow import csv
+from skyhook_common import *
 
-
-class Coordinator:
-    limit = 0
-    ongoing = 0
-
-    def __init__(self, limit=2):
-        self.limit = limit
-        self.ongoing = 0
-
-    def increment(self, x=1):
-        if self.ongoing + x < self.limit:
-            self.ongoing += x
-            return True
-        return False
-    
-    def decrement(self):
-        if self.ongoing > 0 :
-            self.ongoing -= 1
-            return True
-        return False
-
-    def getleft(self):
-        return self.limit - self.ongoing
 
 def mergeTables(fu_arr):
     postprocess(fu_arr)
@@ -145,4 +123,176 @@ def postprocess(futures):
     file = StringIO(data)
     table = csv.read_csv(file)
     return table
+
+
+def writeDataset(path , dst_type = 'root'):
+    #internal functions
+    def buildObj(dst_name, branch, subnode):
+        objname = branch.name.decode("utf-8")
+        
+        parent = subnode.parent
+        while parent is not None:
+            objname = parent.name + '.' + objname
+            parent = parent.parent
+            
+        objname = dst_name + '.' + objname
+        
+        field = None
+        fieldmeta = {}
+        fieldmeta['BasketSeek'] = bytes(branch._fBasketSeek)
+        fieldmeta['BasketBytes'] = bytes(branch._fBasketBytes)
+        fieldmeta['Compression'] = bytes(str(branch.compression), 'utf8')
+        fieldmeta['Compressionratio'] = bytes(str(branch.compressionratio()),'utf8')
+        
+        if('inf' not in str(branch.interpretation.type) and 'bool' in str(branch.interpretation.type)):
+            function=getattr(pa,'bool_')
+            field = pa.field(branch.name, function(), metadata = fieldmeta)
+            
+        elif('inf' in str(branch.interpretation.type)):
+            function= getattr(pa,'list_')
+            subfunc = None
+            if('bool' in str(branch.interpretation.type)):
+                subfunc = getattr(pa,'bool_')
+            else:
+                subfunc = getattr(pa,str(branch.interpretation.type).split()[-1])
+            field = pa.field(branch.name, function(subfunc()), metadata = fieldmeta)
+            
+        else:
+            function=getattr(pa,str(branch.interpretation.type))
+            field = pa.field(branch.name, function(), metadata = fieldmeta)
+            
+        schema = pa.schema([field])
+        
+        #metadata for the arrow table
+        sche_meta = {}
+        #versions
+        sche_meta['0'] = bytes(0)
+        sche_meta['1'] = bytes(0)
+        sche_meta['2'] = bytes(0)
+        #data format -> arrow
+        sche_meta['3'] = bytes(5)
+        sche_meta['4'] = bytes('0' + ' ' + str(field.type) + ' 0 1 ' + str(branch.name), 'utf8')
+        sche_meta['5'] = bytes('n/a','utf8')
+        sche_meta['6'] = bytes(str(subnode.parent.name),'utf8')
+        sche_meta['7'] = bytes(branch.numentries)
+
+        schema.with_metadata(sche_meta)
+        table = pa.Table.from_arrays([branch.array().tolist()],schema = schema)
+        
+        #Serialize arrow table to bytes
+        batches = table.to_batches()
+        sink = pa.BufferOutputStream()
+        writer = pa.RecordBatchStreamWriter(sink, schema)
+        for batch in batches:
+            writer.write_batch(batch)
+        buff = sink.getvalue()
+        buff_bytes = buff.to_pybytes()
+        
+        #data should be written into the ceph pools
+        #for now writ the data into 'data' which is a local folder
+        cephobj = open('/users/xweichu/projects/pool/'+objname,'wb+')
+        cephobj.write(buff_bytes)
+        cephobj.close()
+
+    def growTree(dst_name, node, rootobj):
+        
+        if 'allkeys' not in dir(rootobj):
+            return
+        
+        for key in rootobj.allkeys():
+            datatype = None
+            if 'Branch' in str(type(rootobj[key])):
+                datatype = str(rootobj[key].interpretation.type)
+                
+            subnode = RootNode(key.decode("utf-8"),str(type(rootobj[key])).split('.')[-1].split('\'')[0], datatype, node)
+            node.children.append(subnode)
+            growTree(dst_name, subnode, rootobj[key])
+            
+            #build the object if it's a branch
+            if('Branch' in str(subnode.classtype)):
+                buildObj(dst_name, rootobj[key], subnode)
+
+    def tree_traversal(root):
+        output = {}
+        if root!=None:   
+            children = root.children
+        output["name"] = str(root.name)
+        output["classtype"] = str(root.classtype)
+        output['datatype'] = str(root.datatype)
+        output["children"] = []
+
+        for node in children:
+            output["children"].append(tree_traversal(node))
+        return output
+
+    def process_file(path):
+        file = uproot.open(path)
+        #build objects and generate json file which dipicts the logical structure
+        tree = RootNode(file.name.decode("utf-8"), str(type(file)).split('.')[-1].split('\'')[0], None, None)
+        growTree(dstname, tree, file)
+        logic_schema = tree_traversal(tree)
+        return logic_schema
+
+    client = Client('128.105.144.19:8786')
+    #for now, the path is a local path on the driver server
+    #suppose the file has been downlaoded
+    #get the list of files in the path location and is the dst_type
+    file_list = [f for f in listdir(path) if isfile(join(path, f)) and dst_type in f]
+    
+    #dataset name is the last dir name, it can be -2
+    dstname = path.split('/')[-1]
+    
+    #the metadata object should is a json file which has the following content so far:
+    #1.the dataset name, 2.a list of files
+    #the metadata for each file should include: file attribute json string, and root file structure json string. 
+    metadata = {}
+    metadata['dataset_name'] = dstname
+    metadata['files'] = []
+    
+    #the size of the dataset
+    total_size = 0
+    
+    #the concept of dataset can have more attributes, to be added here
+    
+    #process each file in the file list
+    for r_file in file_list:
+        file_meta = {}
+        file_meta['name'] = r_file
+        #read the file attributes based on the stat() info
+        stat_res = os.stat(join(path, r_file))
+        stat_res_dict = {}
+        stat_res_dict['size'] = stat_res.st_size
+        total_size += stat_res.st_size
+        stat_res_dict['last access time'] = stat_res.st_atime
+        stat_res_dict['last modified time'] = stat_res.st_mtime
+        stat_res_dict['last changed time'] = stat_res.st_ctime
+        #stat_json = json.dumps(stat_res_dict)
+        file_meta['file_attributes'] = stat_res_dict
+        
+        future = client.submit(process_file, join(path, r_file))
+
+        #logic_struct_json = json.dumps(logic_struct)
+        file_meta['file_schema'] = future
+        
+        metadata['files'].append(file_meta)
+    
+    
+    metadata['size'] = total_size
+    
+    #constructed the metadata object
+    #json formatter can be used to view the content of the json file clearly
+    #https://jsonformatter.curiousconcept.com/
+    with open('/users/xweichu/projects/pool/data.json', 'w') as outfile:
+        json.dump(metadata, outfile)
+
+
+def getDataset(name):
+    data = json.loads(open('data.json').read())
+    files = []
+    for item in data['files']:
+        file = File(item['name'], item['file_attributes'], item['file_schema'], name)
+        files.append(file)
+
+    dataset = Dataset(data['dataset_name'], data['size'], files)
+    return dataset
 
