@@ -141,8 +141,8 @@ def writeDataset(path , dst_type = 'root'):
         fieldmeta = {}
         fieldmeta['BasketSeek'] = bytes(branch._fBasketSeek)
         fieldmeta['BasketBytes'] = bytes(branch._fBasketBytes)
-        fieldmeta['Compression'] = bytes(str(branch.compression), 'utf8')
-        fieldmeta['Compressionratio'] = bytes(str(branch.compressionratio()),'utf8')
+        fieldmeta['Compression'] = bytes(str(branch.compression))
+        fieldmeta['Compressionratio'] = bytes(str(branch.compressionratio()))
         
         if('inf' not in str(branch.interpretation.type) and 'bool' in str(branch.interpretation.type)):
             function=getattr(pa,'bool_')
