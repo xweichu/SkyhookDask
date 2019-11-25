@@ -255,6 +255,7 @@ def writeDataset(path , dst_type = 'root'):
     #the concept of dataset can have more attributes, to be added here
     
     #process each file in the file list
+    futures = []
     for r_file in file_list:
         file_meta = {}
         file_meta['name'] = r_file
@@ -272,10 +273,12 @@ def writeDataset(path , dst_type = 'root'):
         future = client.submit(process_file, join(path, r_file))
 
         #logic_struct_json = json.dumps(logic_struct)
-        file_meta['file_schema'] = future
+        file_meta['file_schema'] = 'future'
+        futures.append(future)
         
         metadata['files'].append(file_meta)
     
+    client.collect(futures)
     
     metadata['size'] = total_size
     
