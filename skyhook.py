@@ -38,7 +38,7 @@ class SkyhookDM:
     
     def runQuery(self, obj, querystr):
         if 'File' in str(obj):
-            obj_prefix = obj.dataset + '.' + obj.name
+            obj_prefix = obj.dataset + '.' + 'nano_tree.root'
             brs = querystr.split('project')[1].split()[0].split(',')
 
             objnames = []
