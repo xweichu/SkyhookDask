@@ -294,13 +294,13 @@ def writeDataset(path , dst_type = 'root'):
     return True
 
 
-def getDataset(name):
-    data = json.loads(open('data.json').read())
-    files = []
-    for item in data['files']:
-        file = File(item['name'], item['file_attributes'], item['file_schema'], name)
-        files.append(file)
+# def getDataset(name):
+#     data = json.loads(open('/users/xweichu/projects/pool/data.json').read())
+#     files = []
+#     for item in data['files']:
+#         file = File(item['name'], item['file_attributes'], item['file_schema'], name)
+#         files.append(file)
 
-    dataset = Dataset(data['dataset_name'], data['size'], files)
-    return dataset
+#     dataset = Dataset(data['dataset_name'], data['size'], files)
+#     return dataset
 
