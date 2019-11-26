@@ -15,4 +15,4 @@ sk.connect('128.105.144.19')
 dst = sk.getDataset('testdata')
 dst.getFiles()
 f = dst.getFiles()[0]
-dst.runQuery(f,'select event>X, project Events;1.Muon_dzErr')
+sk.runQuery(f,'select event>X, project Events;1.Muon_dzErr,Events;1.SV_x,Events;1.Jet_puId')

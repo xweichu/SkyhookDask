@@ -62,6 +62,19 @@ class SkyhookDM:
             
             return tables
         return 0
-                
+    
+    def getTreeSchema(self, file, path):
+        elems = path.split('.')
+        f_schema = file.getSchema()
+        for i in range(len(elems -1)):
+            f_schema = f_schema[elems[i]]
+        
+        treeSchema = ''
+        
+        return 0
+
+        
+
+
 
 

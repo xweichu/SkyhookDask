@@ -126,10 +126,10 @@ def postprocess(futures):
 
 
 def writeDataset(path , dst_type = 'root'):
+ 
     #internal functions
-    def buildObj(dst_name, branch, subnode):
+    def buildObj(dst_name, branch, subnode, obj_id):
         objname = branch.name.decode("utf-8")
-        
         parent = subnode.parent
         while parent is not None:
             objname = parent.name + '.' + objname
@@ -171,7 +171,7 @@ def writeDataset(path , dst_type = 'root'):
         sche_meta['2'] = bytes(0)
         #data format -> arrow
         sche_meta['3'] = bytes(5)
-        sche_meta['4'] = bytes('0' + ' ' + str(field.type) + ' 0 1 ' + str(branch.name))
+        sche_meta['4'] = bytes(str(obj_id) + ' ' + str(field.type) + ' 0 1 ' + str(branch.name))
         sche_meta['5'] = bytes('n/a')
         sche_meta['6'] = bytes(str(subnode.parent.name))
         sche_meta['7'] = bytes(branch.numentries)
@@ -198,19 +198,24 @@ def writeDataset(path , dst_type = 'root'):
         
         if 'allkeys' not in dir(rootobj):
             return
-        
+
+        child_id = 0
+
         for key in rootobj.allkeys():
+           
             datatype = None
             if 'Branch' in str(type(rootobj[key])):
                 datatype = str(rootobj[key].interpretation.type)
                 
-            subnode = RootNode(key.decode("utf-8"),str(type(rootobj[key])).split('.')[-1].split('\'')[0], datatype, node)
+            subnode = RootNode(key.decode("utf-8"),str(type(rootobj[key])).split('.')[-1].split('\'')[0], datatype, node, child_id)
             node.children.append(subnode)
             growTree(dst_name, subnode, rootobj[key])
             
             #build the object if it's a branch
             if('Branch' in str(subnode.classtype)):
-                buildObj(dst_name, rootobj[key], subnode)
+                buildObj(dst_name, rootobj[key], subnode, child_id)
+            
+        child_id += 1
 
     def tree_traversal(root):
         output = {}
@@ -219,6 +224,7 @@ def writeDataset(path , dst_type = 'root'):
         output["name"] = str(root.name)
         output["classtype"] = str(root.classtype)
         output['datatype'] = str(root.datatype)
+        output['node_id'] = str(root.node_id)
         output["children"] = []
 
         for node in children:
@@ -228,7 +234,7 @@ def writeDataset(path , dst_type = 'root'):
     def process_file(path):
         file = uproot.open(path)
         #build objects and generate json file which dipicts the logical structure
-        tree = RootNode(file.name.decode("utf-8"), str(type(file)).split('.')[-1].split('\'')[0], None, None)
+        tree = RootNode(file.name.decode("utf-8"), str(type(file)).split('.')[-1].split('\'')[0], None, None, 0)
         growTree(dstname, tree, file)
         logic_schema = tree_traversal(tree)
         return logic_schema

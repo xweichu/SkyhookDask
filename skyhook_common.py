@@ -70,12 +70,13 @@ class File:
 
 
 class RootNode(object):
-    def __init__(self, name, classtype, datatype, parent):
+    def __init__(self, name, classtype, datatype, parent, node_id):
         self.children  = []
         self.name = name
         self.classtype = classtype
         self.parent = parent
         self.datatype = datatype
+        self.node_id = node_id
         
     def getName(self):
         return self.name
