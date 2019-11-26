@@ -16,3 +16,4 @@ dst = sk.getDataset('testdata')
 dst.getFiles()
 f = dst.getFiles()[0]
 sk.runQuery(f,'select event>X, project Events;1.Muon_dzErr,Events;1.SV_x,Events;1.Jet_puId')
+sk.writeDataset('/users/xweichu/projects/testdata')

@@ -51,7 +51,7 @@ class File:
     
     
     def buildTree(self, nd_dict, parent):
-        node = RootNode(nd_dict['name'], nd_dict['classtype'], nd_dict['datatype'], parent)
+        node = RootNode(nd_dict['name'], nd_dict['classtype'], nd_dict['datatype'], parent, nd_dict['node_id'])
         node.children = []
         for item in nd_dict['children']:
             tmp = self.buildTree(item, node)
