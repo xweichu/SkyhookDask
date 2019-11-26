@@ -208,6 +208,7 @@ def writeDataset(path , dst_type = 'root'):
                 datatype = str(rootobj[key].interpretation.type)
                 
             subnode = RootNode(key.decode("utf-8"),str(type(rootobj[key])).split('.')[-1].split('\'')[0], datatype, node, child_id)
+            print(child_id)
             node.children.append(subnode)
             growTree(dst_name, subnode, rootobj[key])
             
@@ -285,6 +286,7 @@ def writeDataset(path , dst_type = 'root'):
         metadata['files'].append(file_meta)
     
     schemas = client.gather(futures)
+
     i = 0
     for item in metadata['files']:
         item['file_schema'] = schemas[i]
