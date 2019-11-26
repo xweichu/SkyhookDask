@@ -226,10 +226,11 @@ def writeDataset(path , dst_type = 'root'):
         output["classtype"] = str(root.classtype)
         output['datatype'] = str(root.datatype)
         output['node_id'] = str(root.node_id)
-        output["children"] = []
+        output["children"] = {}
 
         for node in children:
-            output["children"].append(tree_traversal(node))
+            output["children"][node.name]= tree_traversal(node)
+            
         return output
 
     def process_file(path):
