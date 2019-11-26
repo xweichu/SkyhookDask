@@ -214,8 +214,9 @@ def writeDataset(path , dst_type = 'root'):
             #build the object if it's a branch
             if('Branch' in str(subnode.classtype)):
                 buildObj(dst_name, rootobj[key], subnode, child_id)
+            child_id += 1
             
-        child_id += 1
+        
 
     def tree_traversal(root):
         output = {}
@@ -234,7 +235,7 @@ def writeDataset(path , dst_type = 'root'):
     def process_file(path):
         file = uproot.open(path)
         #build objects and generate json file which dipicts the logical structure
-        tree = RootNode(file.name.decode("utf-8"), str(type(file)).split('.')[-1].split('\'')[0], None, None, 0)
+        tree = RootNode(file.name.decode("utf-8"), str(type(file)).split('.')[-1].split('\'')[0], None, None,0)
         growTree(dstname, tree, file)
         logic_schema = tree_traversal(tree)
         return logic_schema
@@ -261,7 +262,7 @@ def writeDataset(path , dst_type = 'root'):
     #the concept of dataset can have more attributes, to be added here
     
     #process each file in the file list
-    # futures = []
+    futures = []
     for r_file in file_list:
         file_meta = {}
         file_meta['name'] = r_file
@@ -276,20 +277,20 @@ def writeDataset(path , dst_type = 'root'):
         #stat_json = json.dumps(stat_res_dict)
         file_meta['file_attributes'] = stat_res_dict
         
-        # future = client.submit(process_file, join(path, r_file))
+        future = client.submit(process_file, join(path, r_file))
 
         #logic_struct_json = json.dumps(logic_struct)
-        file_meta['file_schema'] = process_file(join(path, r_file))
-        # futures.append(future)
+        file_meta['file_schema'] = 'future'
+        futures.append(future)
         
         metadata['files'].append(file_meta)
     
-    # schemas = client.gather(futures)
+    schemas = client.gather(futures)
 
-    # i = 0
-    # for item in metadata['files']:
-    #     item['file_schema'] = schemas[i]
-    #     i += 1
+    i = 0
+    for item in metadata['files']:
+        item['file_schema'] = schemas[i]
+        i += 1
     
     metadata['size'] = total_size
     
