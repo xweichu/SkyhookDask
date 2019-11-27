@@ -70,7 +70,7 @@ class SkyhookDM:
         i = 2
         found = False
 
-        for i in range(len(elems -1)):
+        for i in range(len(elems) - 1):
 
             for j in range(len(f_schema['children'])):
                 ch_sche = f_schema['children'][j]
