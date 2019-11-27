@@ -213,7 +213,9 @@ def writeDataset(path , dst_type = 'root'):
             
             #build the object if it's a branch
             if('Branch' in str(subnode.classtype)):
-                buildObj(dst_name, rootobj[key], subnode, child_id)            
+                buildObj(dst_name, rootobj[key], subnode, child_id)
+
+            child_id += 1            
         
 
     def tree_traversal(root):
