@@ -87,7 +87,7 @@ class SkyhookDM:
         treeSchema = ''
         if found:
             for child in f_schema['children']:
-                treeSchema = treeSchema + ';' child['node_id'] + ' 3 1 0 ' + child['name']
+                treeSchema = treeSchema + ';' + child['node_id'] + ' 3 1 0 ' + child['name']
         print(treeSchema)
         return treeSchema
 
