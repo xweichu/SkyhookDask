@@ -66,12 +66,30 @@ class SkyhookDM:
     def getTreeSchema(self, file, path):
         elems = path.split('.')
         f_schema = file.getSchema()
+
+        i = 2
+        found = False
+
         for i in range(len(elems -1)):
-            f_schema = f_schema[elems[i]]
+
+            for j in range(len(f_schema['children'])):
+                ch_sche = f_schema['children'][j]
+                if elems[i] == ch_sche['name']:
+                    f_schema = ch_sche
+                    break
         
+        for m in range(len(f_schema['children'])):
+            ch_sche = f_schema['children'][m]
+            if elems[-1] == ch_sche['name']:
+                found = True
+                break
+
         treeSchema = ''
-        
-        return 0
+        if found:
+            for child in f_schema['children']:
+                treeSchema = treeSchema + child['node_id'] + ' 3 1 0 ' + child['name']
+        print(treeSchema)
+        return treeSchema
 
         
 
