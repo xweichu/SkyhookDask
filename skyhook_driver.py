@@ -164,7 +164,7 @@ def writeDataset(path , dst_type = 'root'):
         print(d_type)
 
         if d_type in field_types.keys():
-            return[d_type]
+            return field_types[d_type]
 
         return 0
 
