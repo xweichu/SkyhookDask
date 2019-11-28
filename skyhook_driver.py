@@ -128,14 +128,60 @@ def postprocess(futures):
 def writeDataset(path , dst_type = 'root'):
  
     #internal functions
+
+    def match_skyhook_datatype(d_type):
+        field_types = {}
+        field_types[None] = 0
+        field_types['int8'] = 1
+        field_types['int16'] = 2
+        field_types['int32'] = 3
+        field_types['int64'] = 4
+        field_types['uint8'] = 5
+        field_types['uint16'] = 6
+        field_types['uint32'] = 7
+        field_types['uint64'] = 8
+        field_types['char'] = 9
+        field_types['uchar'] = 10
+        field_types['bool'] = 11
+        field_types['float'] = 12
+        field_types['double'] = 13
+        field_types['date'] = 14
+        field_types['string'] = 15
+        field_types['[0, inf) -> bool'] = 16
+        field_types['[0, inf) -> char'] = 17
+        field_types['[0, inf) -> uchar'] = 18
+        field_types['[0, inf) -> int8'] = 19
+        field_types['[0, inf) -> int16'] = 20
+        field_types['[0, inf) -> int32'] = 21
+        field_types['[0, inf) -> int64'] = 22
+        field_types['[0, inf) -> uint8'] = 23
+        field_types['[0, inf) -> uint16'] = 24
+        field_types['[0, inf) -> uint32'] = 25
+        field_types['[0, inf) -> uint64'] = 26
+        field_types['[0, inf) -> float'] = 27
+        field_types['[0, inf) -> double'] = 28
+
+        if d_type in field_types.keys():
+            return[d_type]
+
+        return 0
+
+
     def buildObj(dst_name, branch, subnode, obj_id):
-        objname = branch.name.decode("utf-8")
+        # change the name here to object_id which is the node_id
+        # objname = branch.name.decode("utf-8")
+        objname = str(obj_id)
         parent = subnode.parent
         while parent is not None:
             objname = parent.name + '.' + objname
             parent = parent.parent
             
         objname = dst_name + '.' + objname
+
+        # this is for the event id colo
+        event_id_col = pa.field('Event_ID', pa.int64())
+        id_array = range(branch.numentries)
+
         
         field = None
         fieldmeta = {}
@@ -161,7 +207,7 @@ def writeDataset(path , dst_type = 'root'):
             function=getattr(pa,str(branch.interpretation.type))
             field = pa.field(branch.name, function(), metadata = fieldmeta)
             
-        schema = pa.schema([field])
+        schema = pa.schema([event_id_col, field])
         
         #metadata for the arrow table
         sche_meta = {}
@@ -171,13 +217,13 @@ def writeDataset(path , dst_type = 'root'):
         sche_meta['2'] = bytes(0)
         #data format -> arrow
         sche_meta['3'] = bytes(5)
-        sche_meta['4'] = bytes(str(obj_id) + ' ' + str(field.type) + ' 0 1 ' + str(branch.name))
+        sche_meta['4'] = bytes(str(obj_id) + ' ' + str(match_skyhook_datatype(branch.interpretation.type)) + ' 0 1 ' + str(branch.name))
         sche_meta['5'] = bytes('n/a')
-        sche_meta['6'] = bytes(str(subnode.parent.name))
+        sche_meta['6'] = bytes(str(branch.name.decode("utf-8")))
         sche_meta['7'] = bytes(branch.numentries)
 
         schema.with_metadata(sche_meta)
-        table = pa.Table.from_arrays([branch.array().tolist()],schema = schema)
+        table = pa.Table.from_arrays([id_array, branch.array().tolist()],schema = schema)
         
         #Serialize arrow table to bytes
         batches = table.to_batches()
@@ -201,21 +247,28 @@ def writeDataset(path , dst_type = 'root'):
 
         child_id = 0
 
+        data_schema = None
+        if ('TTree' in str(node.classtype)):
+            data_schema = ''
+
         for key in rootobj.allkeys():
-           
+
             datatype = None
             if 'Branch' in str(type(rootobj[key])):
                 datatype = str(rootobj[key].interpretation.type)
                 
-            subnode = RootNode(key.decode("utf-8"),str(type(rootobj[key])).split('.')[-1].split('\'')[0], datatype, node, child_id)
+            subnode = RootNode(key.decode("utf-8"),str(type(rootobj[key])).split('.')[-1].split('\'')[0], datatype, node, child_id, None)
             node.children.append(subnode)
             growTree(dst_name, subnode, rootobj[key])
             
             #build the object if it's a branch
             if('Branch' in str(subnode.classtype)):
                 buildObj(dst_name, rootobj[key], subnode, child_id)
+                data_schema = data_schema + str(child_id) + ' ' + str(match_skyhook_datatype(subnode.datatype)) + ' 0 1 ' + subnode.name + '; '
 
-            child_id += 1            
+            child_id += 1
+
+        node.data_schema = data_schema            
         
 
     def tree_traversal(root):
@@ -226,6 +279,7 @@ def writeDataset(path , dst_type = 'root'):
         output["classtype"] = str(root.classtype)
         output['datatype'] = str(root.datatype)
         output['node_id'] = str(root.node_id)
+        output['data_schema'] = root.data_schema
         output["children"] = []
 
         for node in children:
