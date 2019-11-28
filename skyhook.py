@@ -26,7 +26,7 @@ class SkyhookDM:
         data = json.loads(open('/users/xweichu/projects/pool/data.json').read())
         files = []
         for item in data['files']:
-            file = File(item['name'], item['file_attributes'], item['file_schema'], name)
+            file = File(item['name'], item['file_attributes'], item['file_schema'], name, item['rootdirectory'])
             files.append(file)
 
         dataset = Dataset(data['dataset_name'], data['size'], files)

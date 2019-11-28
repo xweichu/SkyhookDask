@@ -289,10 +289,10 @@ def writeDataset(path , dst_type = 'root'):
         return output
 
     def process_file(path):
-        file = uproot.open(path)
+        root_dir = uproot.open(path)
         #build objects and generate json file which dipicts the logical structure
-        tree = RootNode(file.name.decode("utf-8"), str(type(file)).split('.')[-1].split('\'')[0], None, None, 0, None)
-        growTree(dstname, tree, file)
+        tree = RootNode(root_dir.name.decode("utf-8"), str(type(root_dir)).split('.')[-1].split('\'')[0], None, None, 0, None)
+        growTree(dstname + '.' + path.split('/')[-1], tree, root_dir)
         logic_schema = tree_traversal(tree)
         return logic_schema
 
@@ -322,6 +322,7 @@ def writeDataset(path , dst_type = 'root'):
     for r_file in file_list:
         file_meta = {}
         file_meta['name'] = r_file
+        file_meta['ROOTDirectory'] = uproot.open(path).name
         #read the file attributes based on the stat() info
         stat_res = os.stat(join(path, r_file))
         stat_res_dict = {}

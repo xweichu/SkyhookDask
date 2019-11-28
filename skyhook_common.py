@@ -32,11 +32,12 @@ class Dataset:
 
 
 class File:
-    def __init__(self, name, attributes, schema, dataset):
+    def __init__(self, name, attributes, schema, dataset, rootdirectory):
         self.name = name
         self.attributes = attributes
         self.schema = schema
         self.dataset = dataset
+        self.ROOTDirectory = rootdirectory
         
     def getAttributes(self):
         return self.attributes
@@ -51,7 +52,7 @@ class File:
     
     
     def buildTree(self, nd_dict, parent):
-        node = RootNode(nd_dict['name'], nd_dict['classtype'], nd_dict['datatype'], parent, nd_dict['node_id'])
+        node = RootNode(nd_dict['name'], nd_dict['classtype'], nd_dict['datatype'], parent, nd_dict['node_id'], nd_dict['data_schema'])
         node.children = []
         for item in nd_dict['children']:
             tmp = self.buildTree(item, node)
