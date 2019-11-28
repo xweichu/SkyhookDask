@@ -144,7 +144,7 @@ def writeDataset(path , dst_type = 'root'):
         field_types['uchar'] = 10
         field_types['bool'] = 11
         field_types['float'] = 12
-        field_types['double'] = 13
+        field_types['float64'] = 13
         field_types['date'] = 14
         field_types['string'] = 15
         field_types['[0, inf) -> bool'] = 16
@@ -159,9 +159,11 @@ def writeDataset(path , dst_type = 'root'):
         field_types['[0, inf) -> uint32'] = 25
         field_types['[0, inf) -> uint64'] = 26
         field_types['[0, inf) -> float'] = 27
-        field_types['[0, inf) -> double'] = 28
+        field_types['[0, inf) -> float64'] = 28
 
-        print(d_type)
+        # print(d_type)
+        # no float64
+        # [0, inf) doesn't work? 
 
         if str(d_type) in field_types.keys():
             return field_types[str(d_type)]
@@ -224,7 +226,7 @@ def writeDataset(path , dst_type = 'root'):
         sche_meta['6'] = bytes(str(branch.name.decode("utf-8")))
         sche_meta['7'] = bytes(branch.numentries)
 
-        schema.with_metadata(sche_meta)
+        schema.add_metadata(sche_meta)
         table = pa.Table.from_arrays([id_array, branch.array().tolist()],schema = schema)
         
         #Serialize arrow table to bytes
