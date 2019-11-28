@@ -289,7 +289,7 @@ def writeDataset(path , dst_type = 'root'):
     def process_file(path):
         file = uproot.open(path)
         #build objects and generate json file which dipicts the logical structure
-        tree = RootNode(file.name.decode("utf-8"), str(type(file)).split('.')[-1].split('\'')[0], None, None,0)
+        tree = RootNode(file.name.decode("utf-8"), str(type(file)).split('.')[-1].split('\'')[0], None, None, 0, None)
         growTree(dstname, tree, file)
         logic_schema = tree_traversal(tree)
         return logic_schema
