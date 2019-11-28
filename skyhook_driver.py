@@ -322,7 +322,7 @@ def writeDataset(path , dst_type = 'root'):
     for r_file in file_list:
         file_meta = {}
         file_meta['name'] = r_file
-        file_meta['ROOTDirectory'] = uproot.open(path).name
+        file_meta['ROOTDirectory'] = uproot.open(join(path, r_file)).name
         #read the file attributes based on the stat() info
         stat_res = os.stat(join(path, r_file))
         stat_res_dict = {}
