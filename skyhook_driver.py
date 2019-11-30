@@ -129,6 +129,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
  
     #internal functions
     def match_skyhook_datatype(d_type):
+        #how to handle float32
         field_types = {}
         field_types[None] = 0
         field_types['int8'] = 1
