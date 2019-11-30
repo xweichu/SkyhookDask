@@ -125,7 +125,7 @@ def postprocess(futures):
     return table
 
 
-def writeDataset(path ,dstname , dst_type = 'root' ):
+def writeDataset(path, dstname, dst_type = 'root' ):
  
     #internal functions
 
