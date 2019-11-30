@@ -48,29 +48,61 @@ class SkyhookDM:
     
     def runQuery(self, obj, querystr):
         if 'File' in str(obj):
-            obj_prefix = obj.dataset + '.' + 'nano_tree.root'
+            obj_prefix = obj.dataset + '@' + obj.name + '@' + obj.ROOTDirectory
+
             brs = querystr.split('project')[1].split()[0].split(',')
 
-            objnames = []
+            commands = []
             for br in brs:
-                objnames.append(obj_prefix + '.' + br)
+                elems = br.split('.')
+                br_name = elems[-1]
+                elems.remove(br_name)
+                tmp_prefix = ''
+                for elem in elems:
+                    tmp_prefix = tmp_prefix + '@' + elem
+                cmd_prefix = obj_prefix + '@' + tmp_prefix
+                data_schema = ''
 
-            def runOnDriver(objname):
-                tmppath = '/users/xweichu/projects/pool/'
-                bf = open(tmppath + objname, 'rb')
-                reader = pa.ipc.open_stream(bf)
-                batches = [b for b in reader]
-                table = pa.Table.from_batches(batches)
-                return str(table.schema)
+                f_schema = obj.getSchema()
+                found = False
+
+                for i in range(len(elems)):
+                    for j in range(len(f_schema['children'])):
+                        ch_sche = f_schema['children'][j]
+                        if elems[i] == ch_sche['name']:
+                            f_schema = ch_sche
+                            break
+        
+                for m in range(len(f_schema['children'])):
+                    ch_sche = f_schema['children'][m]
+                    if elems[-1] == ch_sche['name']:
+                        found = True
+                        f_schema = ch_sche
+                        break
+                
+                if found:
+                    data_schema = f_schema['data_schema']
+                
+                print('prefix:' + cmd_prefix)
+                print('data_schema:' + data_schema)
+                commands.append('')
+
+            # def runOnDriver(objname):
+            #     tmppath = '/users/xweichu/projects/pool/'
+            #     bf = open(tmppath + objname, 'rb')
+            #     reader = pa.ipc.open_stream(bf)
+            #     batches = [b for b in reader]
+            #     table = pa.Table.from_batches(batches)
+            #     return str(table.schema)
             
-            futures = []
+            # futures = []
 
-            for objname in objnames:
-                futures.append(self.client.submit(runOnDriver,objname))
+            # for objname in objnames:
+            #     futures.append(self.client.submit(runOnDriver,objname))
 
-            tables = self.client.gather(futures)
+            # tables = self.client.gather(futures)
             
-            return tables
+            # return tables
         return 0
     
     def getTreeSchema(self, file, path):
@@ -81,7 +113,6 @@ class SkyhookDM:
         found = False
 
         for i in range(len(elems) - 1):
-
             for j in range(len(f_schema['children'])):
                 ch_sche = f_schema['children'][j]
                 if elems[i] == ch_sche['name']:
