@@ -178,7 +178,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         objname = dst_name + '@' + objname
 
         # this is for the event id colo
-        event_id_col = pa.field('Event_ID', pa.int64())
+        event_id_col = pa.field('EVENT_ID', pa.int64())
         id_array = range(branch.numentries)
 
         
@@ -191,7 +191,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         
         if('inf' not in str(branch.interpretation.type) and 'bool' in str(branch.interpretation.type)):
             function=getattr(pa,'bool_')
-            field = pa.field(branch.name, function(), metadata = fieldmeta)
+            field = pa.field(branch.name.upper(), function(), metadata = fieldmeta)
             
         elif('inf' in str(branch.interpretation.type)):
             function= getattr(pa,'list_')
@@ -200,11 +200,11 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
                 subfunc = getattr(pa,'bool_')
             else:
                 subfunc = getattr(pa,str(branch.interpretation.type).split()[-1])
-            field = pa.field(branch.name, function(subfunc()), metadata = fieldmeta)
+            field = pa.field(branch.name.upper(), function(subfunc()), metadata = fieldmeta)
             
         else:
             function=getattr(pa,str(branch.interpretation.type))
-            field = pa.field(branch.name, function(), metadata = fieldmeta)
+            field = pa.field(branch.name.upper(), function(), metadata = fieldmeta)
             
         schema = pa.schema([event_id_col, field])
         
@@ -215,11 +215,11 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         sche_meta['1'] = bytes(0)
         sche_meta['2'] = bytes(0)
         #data format -> arrow
-        sche_meta['3'] = bytes(5)
-        sche_meta['4'] = bytes(str(obj_id) + ' ' + str(match_skyhook_datatype(branch.interpretation.type)) + ' 0 1 ' + str(branch.name))
+        sche_meta['3'] = bytes(11)
+        sche_meta['4'] = bytes('0 4 0 0 EVENT_ID;' + str(obj_id) + ' ' + str(match_skyhook_datatype(branch.interpretation.type)) + ' 0 1 ' + str(branch.name).upper())
         sche_meta['5'] = bytes('n/a')
         sche_meta['6'] = bytes(str(branch.name.decode("utf-8")))
-        sche_meta['7'] = bytes(branch.numentries)
+        sche_meta['7'] = bytes(int(branch.numentries))
 
         schema = schema.with_metadata(sche_meta)
         table = pa.Table.from_arrays([id_array, branch.array().tolist()],schema = schema)
@@ -235,18 +235,20 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         
         #data should be written into the ceph pools
         #for now writ the data into 'data' which is a local folder
-        # cephobj = open('/users/xweichu/projects/pool/'+objname,'wb+')
+      
+        # Write to the Ceph pool
+        # cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+        # cluster.connect()
+        # ioctx = cluster.open_ioctx('hepdatapool')
+        # ioctx.write_full(objname, buff_bytes)
+        # ioctx.set_xattr(objname, 'size', str(len(buff_bytes)))
+        # ioctx.close()
+        # cluster.shutdown()
 
-        cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
-        cluster.connect()
-        ioctx = cluster.open_ioctx('hepdatapool')
-        ioctx.write_full(objname, buff_bytes)
-        ioctx.set_xattr(objname, 'size', str(len(buff_bytes)))
-        ioctx.close()
-        cluster.shutdown()
-
-        # cephobj.write(buff_bytes)
-        # cephobj.close()
+        #writ it to local folder first
+        cephobj = open('/users/xweichu/projects/pool/'+objname,'wb+')
+        cephobj.write(buff_bytes)
+        cephobj.close()
 
     def growTree(dst_name, node, rootobj):
         
@@ -361,16 +363,16 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
     #constructed the metadata object
     #json formatter can be used to view the content of the json file clearly
     #https://jsonformatter.curiousconcept.com/
-    cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
-    cluster.connect()
-    ioctx = cluster.open_ioctx('hepdatapool')
-    output = json.dumps(metadata)
-    ioctx.write_full(dstname, output)
-    ioctx.set_xattr(dstname, 'size', str(len(output)))
-    ioctx.close()
-    cluster.shutdown()
-    # with open('/users/xweichu/projects/pool/' + dstname, 'w') as outfile:
-    #     json.dump(metadata, outfile)
+    # cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+    # cluster.connect()
+    # ioctx = cluster.open_ioctx('hepdatapool')
+    # output = json.dumps(metadata)
+    # ioctx.write_full(dstname, output)
+    # ioctx.set_xattr(dstname, 'size', str(len(output)))
+    # ioctx.close()
+    # cluster.shutdown()
+    with open('/users/xweichu/projects/pool/' + dstname, 'w') as outfile:
+        json.dump(metadata, outfile)
     return True
 
 

@@ -21,7 +21,7 @@ f.getSchema()
 sk.getTreeSchema(f,'a.b.Events;1.Muon_dzErr')
 
 import pyarrow as pa
-buf = open('testdata.nano_dy.root.nano_tree.root.Events;1.388', 'rb')
+buf = open('sample_dataset@nano_dy.root@nano_tree.root@Events;1@388', 'rb')
 reader = pa.ipc.open_stream(buf)
 batches = [b for b in reader]
 tb = pa.Table.from_batches(batches)
