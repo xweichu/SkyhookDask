@@ -49,7 +49,6 @@ class SkyhookDM:
     def runQuery(self, obj, querystr):
         if 'File' in str(obj):
             obj_prefix = obj.dataset + '@' + obj.name + '@' + obj.ROOTDirectory
-
             brs = querystr.split('project')[1].split()[0].split(',')
 
             commands = []
@@ -73,9 +72,10 @@ class SkyhookDM:
                             f_schema = ch_sche
                             break
         
+                print(f_schema)
                 for m in range(len(f_schema['children'])):
                     ch_sche = f_schema['children'][m]
-                    if elems[-1] == ch_sche['name']:
+                    if br_name == ch_sche['name']:
                         found = True
                         f_schema = ch_sche
                         break
