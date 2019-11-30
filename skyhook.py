@@ -32,7 +32,7 @@ class SkyhookDM:
         data = ioctx.read(name)
         ioctx.close()
         cluster.shutdown()
-        # data = json.loads(open('/users/xweichu/projects/pool/' + name).read())
+        data = json.loads(data)
         files = []
         for item in data['files']:
             file = File(item['name'], item['file_attributes'], item['file_schema'], name, item['ROOTDirectory'])
