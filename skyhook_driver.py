@@ -211,15 +211,15 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         #metadata for the arrow table
         sche_meta = {}
         #versions
-        sche_meta['0'] = bytes(0)
-        sche_meta['1'] = bytes(0)
-        sche_meta['2'] = bytes(0)
+        sche_meta['skyhook_version'] = bytes(0)
+        sche_meta['data_schema_version'] = bytes(0)
+        sche_meta['data_structure_version'] = bytes(0)
         #data format -> arrow
-        sche_meta['3'] = bytes(11)
-        sche_meta['4'] = bytes('0 4 0 0 EVENT_ID;' + str(obj_id) + ' ' + str(match_skyhook_datatype(branch.interpretation.type)) + ' 0 1 ' + str(branch.name).upper())
-        sche_meta['5'] = bytes('n/a')
-        sche_meta['6'] = bytes(str(branch.name.decode("utf-8")))
-        sche_meta['7'] = bytes(int(branch.numentries))
+        sche_meta['data_format_type'] = bytes(11)
+        sche_meta['data_schema'] = bytes('0 4 0 0 EVENT_ID;' + str(obj_id) + ' ' + str(match_skyhook_datatype(branch.interpretation.type)) + ' 0 1 ' + str(branch.name).upper())
+        sche_meta['db_schema'] = bytes('n/a')
+        sche_meta['table_name'] = bytes(str(branch.name.decode("utf-8")))
+        sche_meta['num_rows'] = bytes(int(branch.numentries))
 
         schema = schema.with_metadata(sche_meta)
         table = pa.Table.from_arrays([id_array, branch.array().tolist()],schema = schema)
