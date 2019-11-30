@@ -12,13 +12,13 @@ class SkyhookDM:
         self.client = client
 
     
-    def writeDataset(self, path):
+    def writeDataset(self, path, dstname):
         def runOnDriver(path):
             import skyhook_driver as sd
-            res = sd.writeDataset(path)
+            res = sd.writeDataset(path, dstname)
             return res
 
-        fu = self.client.submit(runOnDriver, path)
+        fu = self.client.submit(runOnDriver, path, dstname)
         result = fu.result()
         return result
 
