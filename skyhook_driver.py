@@ -128,7 +128,42 @@ def postprocess(futures):
 def writeDataset(path, dstname, addr, dst_type = 'root'):
  
     #internal functions
-    import skyhook_common as sc
+    def match_skyhook_datatype(d_type):
+        field_types = {}
+        field_types[None] = 0
+        field_types['int8'] = 1
+        field_types['int16'] = 2
+        field_types['int32'] = 3
+        field_types['int64'] = 4
+        field_types['uint8'] = 5
+        field_types['uint16'] = 6
+        field_types['uint32'] = 7
+        field_types['uint64'] = 8
+        field_types['char'] = 9
+        field_types['uchar'] = 10
+        field_types['bool'] = 11
+        field_types['float'] = 12
+        field_types['float64'] = 13
+        field_types['date'] = 14
+        field_types['string'] = 15
+        field_types['[0, inf) -> bool'] = 16
+        field_types['[0, inf) -> char'] = 17
+        field_types['[0, inf) -> uchar'] = 18
+        field_types['[0, inf) -> int8'] = 19
+        field_types['[0, inf) -> int16'] = 20
+        field_types['[0, inf) -> int32'] = 21
+        field_types['[0, inf) -> int64'] = 22
+        field_types['[0, inf) -> uint8'] = 23
+        field_types['[0, inf) -> uint16'] = 24
+        field_types['[0, inf) -> uint32'] = 25
+        field_types['[0, inf) -> uint64'] = 26
+        field_types['[0, inf) -> float'] = 27
+        field_types['[0, inf) -> float64'] = 28
+
+        if str(d_type) in field_types.keys():
+            return field_types[str(d_type)]
+
+        return 0
 
     def buildObj(dst_name, branch, subnode, obj_id):
         # change the name here to object_id which is the node_id
@@ -180,7 +215,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         sche_meta['2'] = bytes(0)
         #data format -> arrow
         sche_meta['3'] = bytes(5)
-        sche_meta['4'] = bytes(str(obj_id) + ' ' + str(sc.match_skyhook_datatype(branch.interpretation.type)) + ' 0 1 ' + str(branch.name))
+        sche_meta['4'] = bytes(str(obj_id) + ' ' + str(match_skyhook_datatype(branch.interpretation.type)) + ' 0 1 ' + str(branch.name))
         sche_meta['5'] = bytes('n/a')
         sche_meta['6'] = bytes(str(branch.name.decode("utf-8")))
         sche_meta['7'] = bytes(branch.numentries)
@@ -236,8 +271,8 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
             #build the object if it's a branch
             if('Branch' in str(subnode.classtype)):
                 buildObj(dst_name, rootobj[key], subnode, child_id)
-                subnode.data_schema = str(child_id) + ' ' + str(sc.match_skyhook_datatype(subnode.datatype)) + ' 0 1 ' + subnode.name
-                data_schema = data_schema + str(child_id) + ' ' + str(sc.match_skyhook_datatype(subnode.datatype)) + ' 0 1 ' + subnode.name + '; '
+                subnode.data_schema = str(child_id) + ' ' + str(match_skyhook_datatype(subnode.datatype)) + ' 0 1 ' + subnode.name
+                data_schema = data_schema + str(child_id) + ' ' + str(match_skyhook_datatype(subnode.datatype)) + ' 0 1 ' + subnode.name + '; '
 
             child_id += 1
 
