@@ -72,7 +72,7 @@ class SkyhookDM:
                             f_schema = ch_sche
                             break
         
-                print(f_schema)
+                # print(f_schema)
                 for m in range(len(f_schema['children'])):
                     ch_sche = f_schema['children'][m]
                     if br_name == ch_sche['name']:
