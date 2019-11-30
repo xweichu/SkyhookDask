@@ -30,7 +30,7 @@ class SkyhookDM:
         cluster.connect()
         ioctx = cluster.open_ioctx('hepdatapool')
         size = ioctx.get_xattr(name, "size")
-        data = ioctx.read(name, length = size)
+        data = ioctx.read(name, length = int(size))
         ioctx.close()
         cluster.shutdown()
         data = json.loads(data)
