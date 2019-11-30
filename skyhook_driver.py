@@ -158,7 +158,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         field_types['[0, inf) -> uint16'] = 24
         field_types['[0, inf) -> uint32'] = 25
         field_types['[0, inf) -> uint64'] = 26
-        field_types['[0, inf) -> float'] = 27
+        field_types['[0, inf) -> float32'] = 27
         field_types['[0, inf) -> float64'] = 28
 
         if str(d_type) in field_types.keys():
