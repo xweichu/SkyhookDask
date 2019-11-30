@@ -226,7 +226,7 @@ def writeDataset(path, dstname, dst_type = 'root' ):
         sche_meta['6'] = bytes(str(branch.name.decode("utf-8")))
         sche_meta['7'] = bytes(branch.numentries)
 
-        schema = schema.add_metadata(sche_meta)
+        schema = schema.with_metadata(sche_meta)
         table = pa.Table.from_arrays([id_array, branch.array().tolist()],schema = schema)
         
         #Serialize arrow table to bytes
