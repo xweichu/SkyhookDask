@@ -167,6 +167,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         return 0
 
     def buildObj(dst_name, branch, subnode, obj_id):
+        from collections import OrderedDict 
         # change the name here to object_id which is the node_id
         # objname = branch.name.decode("utf-8")
         objname = str(obj_id)
@@ -209,7 +210,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         schema = pa.schema([event_id_col, field])
         
         #metadata for the arrow table
-        sche_meta = {}
+        sche_meta = OrderedDict()
         #versions
         sche_meta['skyhook_version'] = bytes(0)
         sche_meta['data_schema_version'] = bytes(0)
