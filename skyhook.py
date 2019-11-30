@@ -23,7 +23,7 @@ class SkyhookDM:
         return result
 
     def getDataset(self, name):
-        data = json.loads(open('/users/xweichu/projects/pool/data.json').read())
+        data = json.loads(open('/users/xweichu/projects/pool/' + name).read())
         files = []
         for item in data['files']:
             file = File(item['name'], item['file_attributes'], item['file_schema'], name, item['ROOTDirectory'])

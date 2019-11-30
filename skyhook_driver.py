@@ -356,7 +356,7 @@ def writeDataset(path, dstname, dst_type = 'root' ):
     #constructed the metadata object
     #json formatter can be used to view the content of the json file clearly
     #https://jsonformatter.curiousconcept.com/
-    with open('/users/xweichu/projects/pool/data.json', 'w') as outfile:
+    with open('/users/xweichu/projects/pool/' + dstname, 'w') as outfile:
         json.dump(metadata, outfile)
     return True
 
