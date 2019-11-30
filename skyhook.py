@@ -4,21 +4,23 @@ import time
 class SkyhookDM:
     def __init__(self):
         self.client = None
+        self.addr = None
 
 
     def connect(self, ip):
         addr = ip+':8786'
+        self.addr = addr
         client = Client(addr)
         self.client = client
 
     
     def writeDataset(self, path, dstname):
-        def runOnDriver(path, dstname):
+        def runOnDriver(path, dstname, addr):
             import skyhook_driver as sd
-            res = sd.writeDataset(path, dstname)
+            res = sd.writeDataset(path, dstname, addr)
             return res
 
-        fu = self.client.submit(runOnDriver, path, dstname)
+        fu = self.client.submit(runOnDriver, path, dstname, self.addr)
         result = fu.result()
         return result
 

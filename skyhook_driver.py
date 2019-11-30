@@ -6,7 +6,7 @@ import pyarrow as pa
 from StringIO import StringIO
 from pyarrow import csv
 from skyhook_common import *
-
+import rados
 
 def mergeTables(fu_arr):
     postprocess(fu_arr)
@@ -125,7 +125,7 @@ def postprocess(futures):
     return table
 
 
-def writeDataset(path, dstname, dst_type = 'root' ):
+def writeDataset(path, dstname, addr, dst_type = 'root'):
  
     #internal functions
 
@@ -240,9 +240,17 @@ def writeDataset(path, dstname, dst_type = 'root' ):
         
         #data should be written into the ceph pools
         #for now writ the data into 'data' which is a local folder
-        cephobj = open('/users/xweichu/projects/pool/'+objname,'wb+')
-        cephobj.write(buff_bytes)
-        cephobj.close()
+        # cephobj = open('/users/xweichu/projects/pool/'+objname,'wb+')
+
+        cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+        cluster.connect()
+        ioctx = cluster.open_ioctx('hepdatapool')
+        ioctx.write_full(objname, buff_bytes)
+        ioctx.close()
+        cluster.shutdown()
+
+        # cephobj.write(buff_bytes)
+        # cephobj.close()
 
     def growTree(dst_name, node, rootobj):
         
@@ -298,7 +306,7 @@ def writeDataset(path, dstname, dst_type = 'root' ):
         logic_schema = tree_traversal(tree)
         return logic_schema
 
-    client = Client('128.105.144.19:8786')
+    client = Client(addr)
     #for now, the path is a local path on the driver server
     #suppose the file has been downlaoded
     #get the list of files in the path location and is the dst_type
@@ -356,8 +364,14 @@ def writeDataset(path, dstname, dst_type = 'root' ):
     #constructed the metadata object
     #json formatter can be used to view the content of the json file clearly
     #https://jsonformatter.curiousconcept.com/
-    with open('/users/xweichu/projects/pool/' + dstname, 'w') as outfile:
-        json.dump(metadata, outfile)
+    cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+    cluster.connect()
+    ioctx = cluster.open_ioctx('hepdatapool')
+    ioctx.write_full(dstname, json.dumps(metadata))
+    ioctx.close()
+    cluster.shutdown()
+    # with open('/users/xweichu/projects/pool/' + dstname, 'w') as outfile:
+    #     json.dump(metadata, outfile)
     return True
 
 
