@@ -367,7 +367,8 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
     cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
     cluster.connect()
     ioctx = cluster.open_ioctx('hepdatapool')
-    ioctx.write_full(dstname, json.dumps(metadata))
+    output = json.dumps(metadata)
+    ioctx.write_full(dstname, output)
     ioctx.close()
     cluster.shutdown()
     # with open('/users/xweichu/projects/pool/' + dstname, 'w') as outfile:
