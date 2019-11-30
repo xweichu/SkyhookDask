@@ -1,5 +1,6 @@
 from skyhook_common import *
 import time
+import rados
 
 class SkyhookDM:
     def __init__(self):
@@ -25,7 +26,13 @@ class SkyhookDM:
         return result
 
     def getDataset(self, name):
-        data = json.loads(open('/users/xweichu/projects/pool/' + name).read())
+        cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+        cluster.connect()
+        ioctx = cluster.open_ioctx('hepdatapool')
+        data = ioctx.read(name)
+        ioctx.close()
+        cluster.shutdown()
+        # data = json.loads(open('/users/xweichu/projects/pool/' + name).read())
         files = []
         for item in data['files']:
             file = File(item['name'], item['file_attributes'], item['file_schema'], name, item['ROOTDirectory'])

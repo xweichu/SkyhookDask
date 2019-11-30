@@ -11,7 +11,7 @@ sd.writeDataset('/users/xweichu/projects/testdata')
 
 from skyhook import SkyhookDM
 sk = SkyhookDM()
-sk.connect('128.105.144.19')
+sk.connect('128.105.144.211')
 sk.writeDataset('/users/xweichu/projects/testdata', 'sample_dataset')
 dst = sk.getDataset('testdata')
 dst.getFiles()
@@ -46,3 +46,14 @@ ioctx = cluster.open_ioctx('hepdatapool')
 ioctx.write_full("hw", "Hello World!")
 ioctx.read('hw')
 ioctx.remove_object("hw")
+
+
+cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+cluster.connect()
+ioctx = cluster.open_ioctx('hepdatapool')
+ioctx.write_full(dstname, json.dumps(metadata))
+ioctx.close()
+cluster.shutdown()
+
+
+rados -p hepdatapool ls

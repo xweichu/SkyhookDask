@@ -7,6 +7,7 @@ from pyarrow import csv
 from os import listdir
 from os.path import isfile, join
 from dask.distributed import Client
+import rados
 
 
 class Dataset:
