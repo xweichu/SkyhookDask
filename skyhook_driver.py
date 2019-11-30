@@ -177,10 +177,10 @@ def writeDataset(path , dst_type = 'root'):
         objname = str(obj_id)
         parent = subnode.parent
         while parent is not None:
-            objname = parent.name + '.' + objname
+            objname = parent.name + '@' + objname
             parent = parent.parent
-            
-        objname = dst_name + '.' + objname
+        
+        objname = dst_name + '@' + objname
 
         # this is for the event id colo
         event_id_col = pa.field('Event_ID', pa.int64())
