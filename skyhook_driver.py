@@ -125,7 +125,7 @@ def postprocess(futures):
     return table
 
 
-def writeDataset(path , dst_type = 'root'):
+def writeDataset(path ,dstname , dst_type = 'root' ):
  
     #internal functions
 
@@ -305,7 +305,7 @@ def writeDataset(path , dst_type = 'root'):
     file_list = [f for f in listdir(path) if isfile(join(path, f)) and dst_type in f]
     
     #dataset name is the last dir name, it can be -2
-    dstname = path.split('/')[-1]
+    # dstname = dstname
     
     #the metadata object should is a json file which has the following content so far:
     #1.the dataset name, 2.a list of files

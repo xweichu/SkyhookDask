@@ -12,7 +12,7 @@ sd.writeDataset('/users/xweichu/projects/testdata')
 from skyhook import SkyhookDM
 sk = SkyhookDM()
 sk.connect('128.105.144.19')
-sk.writeDataset('/users/xweichu/projects/testdata')
+sk.writeDataset('/users/xweichu/projects/testdata', 'sample_dataset')
 dst = sk.getDataset('testdata')
 dst.getFiles()
 f = dst.getFiles()[0]
@@ -20,7 +20,29 @@ sk.runQuery(f,'select event>X, project Events;1.Muon_dzErr,Events;1.SV_x,Events;
 f.getSchema()
 sk.getTreeSchema(f,'a.b.Events;1.Muon_dzErr')
 
+import pyarrow as pa
 buf = open('testdata.nano_dy.root.nano_tree.root.Events;1.388', 'rb')
 reader = pa.ipc.open_stream(buf)
 batches = [b for b in reader]
 tb = pa.Table.from_batches(batches)
+
+
+import pyarrow as pa
+schema = pa.schema([pa.field('Event_ID', pa.int64())])
+meta = {}
+meta['test'] = 'testval'
+schema.add_metadata(meta)
+schema.metadata
+
+
+import rados
+cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+cluster.connect()
+cluster_stats = cluster.get_cluster_stats()
+
+pools = cluster.list_pools()
+
+ioctx = cluster.open_ioctx('hepdatapool')
+ioctx.write_full("hw", "Hello World!")
+ioctx.read('hw')
+ioctx.remove_object("hw")
