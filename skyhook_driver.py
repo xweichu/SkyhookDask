@@ -246,6 +246,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         cluster.connect()
         ioctx = cluster.open_ioctx('hepdatapool')
         ioctx.write_full(objname, buff_bytes)
+        ioctx.set_xattr(objname, 'size', str(len(buff_bytes)))
         ioctx.close()
         cluster.shutdown()
 
@@ -369,6 +370,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
     ioctx = cluster.open_ioctx('hepdatapool')
     output = json.dumps(metadata)
     ioctx.write_full(dstname, output)
+    ioctx.set_xattr(dstname, 'size', str(len(output)))
     ioctx.close()
     cluster.shutdown()
     # with open('/users/xweichu/projects/pool/' + dstname, 'w') as outfile:

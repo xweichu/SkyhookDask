@@ -57,3 +57,11 @@ cluster.shutdown()
 
 
 rados -p hepdatapool ls
+
+cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+cluster.connect()
+ioctx = cluster.open_ioctx('hepdatapool')
+data = ioctx.read('sample_dataset')
+ioctx.close()
+cluster.shutdown()
+data = json.loads(data)
