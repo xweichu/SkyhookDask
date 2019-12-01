@@ -210,17 +210,22 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         schema = pa.schema([event_id_col, field])
         
         #metadata for the arrow table
-        sche_meta = OrderedDict()
+        # ordered dictionary
+        # sche_meta = OrderedDict()
+        #norman dictionary
+
+        sche_meta = {}
+
         #versions
-        sche_meta['skyhook_version'] = bytes(0)
-        sche_meta['data_schema_version'] = bytes(0)
-        sche_meta['data_structure_version'] = bytes(0)
-        #data format -> arrow
-        sche_meta['data_format_type'] = bytes(11)
-        sche_meta['data_schema'] = bytes('0 4 0 0 EVENT_ID;' + str(obj_id) + ' ' + str(match_skyhook_datatype(branch.interpretation.type)) + ' 0 1 ' + str(branch.name).upper())
-        sche_meta['db_schema'] = bytes('n/a')
-        sche_meta['table_name'] = bytes(str(branch.name.decode("utf-8")))
-        sche_meta['num_rows'] = bytes(int(branch.numentries))
+        # sche_meta['skyhook_version'] = bytes(0)
+        # sche_meta['data_schema_version'] = bytes(0)
+        # sche_meta['data_structure_version'] = bytes(0)
+        # #data format -> arrow
+        # sche_meta['data_format_type'] = bytes(11)
+        sche_meta['0'] = bytes('0 4 0 0 EVENT_ID;' + str(obj_id) + ' ' + str(match_skyhook_datatype(branch.interpretation.type)) + ' 0 1 ' + str(branch.name).upper())
+        # sche_meta['db_schema'] = bytes('n/a')
+        # sche_meta['table_name'] = bytes(str(branch.name.decode("utf-8")))
+        # sche_meta['num_rows'] = bytes(int(branch.numentries))
 
         schema = schema.with_metadata(sche_meta)
         table = pa.Table.from_arrays([id_array, branch.array().tolist()],schema = schema)
