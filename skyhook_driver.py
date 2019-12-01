@@ -1,5 +1,5 @@
 #This is an example of dask server side skyhook_driver library.
-#Copy to /usr/lib/python2.7/ so that it can be imported
+#Copy to /usr/lib/python2.7/ so that it can be imported anywhere 
 from dask.distributed import Client
 import dask.delayed
 import pyarrow as pa

@@ -65,3 +65,18 @@ data = ioctx.read('sample_dataset')
 ioctx.close()
 cluster.shutdown()
 data = json.loads(data)
+
+from skyhook import SkyhookDM
+sk = SkyhookDM()
+sk.connect('128.105.144.211')
+sk.writeDataset('/users/xweichu/projects/dst', 'testdst')
+
+batches = table.to_batches()
+sink = pa.BufferOutputStream()
+writer = pa.RecordBatchStreamWriter(sink, schema)
+for batch in batches:
+    writer.write_batch(batch)
+buff = sink.getvalue()
+buff_bytes = buff.to_pybytes()
+
+# file location:http://uaf-1.t2.ucsd.edu/jeff_data/
