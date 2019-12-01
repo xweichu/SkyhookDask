@@ -53,6 +53,7 @@ class SkyhookDM:
         def generateQueryCommand(file, querystr):
             prefix = file.dataset + '@' + file.name + '@' +file.ROOTDirectory
             brs = querystr.split('project')[1].split()[0].split(',')
+            obj_num = 0
 
             for br in brs:
                 elems = br.split('.')
@@ -64,7 +65,7 @@ class SkyhookDM:
                 obj_prefix = prefix + '@' + local_prefix
                 data_schema = ''
 
-                f_schema = obj.getSchema()
+                f_schema = file.getSchema()
                 found = False
 
                 for i in range(len(elems)):
@@ -73,8 +74,9 @@ class SkyhookDM:
                         if elems[i] == ch_sche['name']:
                             f_schema = ch_sche
                             break
-        
-                # print(f_schema)
+                
+                obj_num = len(f_schema['children'])
+
                 for m in range(len(f_schema['children'])):
                     ch_sche = f_schema['children'][m]
                     if br_name == ch_sche['name']:
@@ -84,9 +86,10 @@ class SkyhookDM:
                 
                 if found:
                     data_schema = f_schema['data_schema']
+                    command = 'prefix:' + obj_prefix + '; data_schema:' + data_schema + '; obj_num:' + str(obj_num) + command_template
+                    commands.append(command)
                 
-                command = 'prefix:' + obj_prefix + '; data_schema:' + data_schema + command_template
-                commands.append(command)
+
 
 
         if 'File' in str(obj):
