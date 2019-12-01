@@ -243,18 +243,18 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         #for now writ the data into 'data' which is a local folder
       
         # Write to the Ceph pool
-        # cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
-        # cluster.connect()
-        # ioctx = cluster.open_ioctx('hepdatapool')
-        # ioctx.write_full(objname, buff_bytes)
-        # ioctx.set_xattr(objname, 'size', str(len(buff_bytes)))
-        # ioctx.close()
-        # cluster.shutdown()
+        cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+        cluster.connect()
+        ioctx = cluster.open_ioctx('hepdatapool')
+        ioctx.write_full(objname, buff_bytes)
+        ioctx.set_xattr(objname, 'size', str(len(buff_bytes)))
+        ioctx.close()
+        cluster.shutdown()
 
-        #writ it to local folder first
-        cephobj = open('/users/xweichu/projects/pool/'+objname,'wb+')
-        cephobj.write(buff_bytes)
-        cephobj.close()
+        #writ it to local folder 
+        # cephobj = open('/users/xweichu/projects/pool/'+objname,'wb+')
+        # cephobj.write(buff_bytes)
+        # cephobj.close()
 
     def growTree(dst_name, node, rootobj):
         
@@ -279,7 +279,13 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
             
             #build the object if it's a branch
             if('Branch' in str(subnode.classtype)):
-                buildObj(dst_name, rootobj[key], subnode, child_id)
+
+                try:
+                    buildObj(dst_name, rootobj[key], subnode, child_id)
+                except:
+                    print(subnode)
+                    continue
+
                 subnode.data_schema = str(child_id) + ' ' + str(match_skyhook_datatype(subnode.datatype)) + ' 0 1 ' + subnode.name
                 data_schema = data_schema + str(child_id) + ' ' + str(match_skyhook_datatype(subnode.datatype)) + ' 0 1 ' + subnode.name + '; '
 
@@ -369,16 +375,16 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
     #constructed the metadata object
     #json formatter can be used to view the content of the json file clearly
     #https://jsonformatter.curiousconcept.com/
-    # cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
-    # cluster.connect()
-    # ioctx = cluster.open_ioctx('hepdatapool')
-    # output = json.dumps(metadata)
-    # ioctx.write_full(dstname, output)
-    # ioctx.set_xattr(dstname, 'size', str(len(output)))
-    # ioctx.close()
-    # cluster.shutdown()
-    with open('/users/xweichu/projects/pool/' + dstname, 'w') as outfile:
-        json.dump(metadata, outfile)
+    cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+    cluster.connect()
+    ioctx = cluster.open_ioctx('hepdatapool')
+    output = json.dumps(metadata)
+    ioctx.write_full(dstname, output)
+    ioctx.set_xattr(dstname, 'size', str(len(output)))
+    ioctx.close()
+    cluster.shutdown()
+    # with open('/users/xweichu/projects/pool/' + dstname, 'w') as outfile:
+    #     json.dump(metadata, outfile)
     return True
 
 
