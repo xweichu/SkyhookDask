@@ -204,8 +204,12 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
             field = pa.field(branch.name.upper(), function(subfunc()), metadata = fieldmeta)
             
         else:
-            function=getattr(pa,str(branch.interpretation.type))
-            field = pa.field(branch.name.upper(), function(), metadata = fieldmeta)
+            try:
+                function=getattr(pa,str(branch.interpretation.type))
+                field = pa.field(branch.name.upper(), function(), metadata = fieldmeta)
+            except:
+                field = pa.field(branch.name.upper(), pa.float64(), metadata = fieldmeta)
+                
             
         schema = pa.schema([event_id_col, field])
         
@@ -279,12 +283,10 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
             
             #build the object if it's a branch
             if('Branch' in str(subnode.classtype)):
-
                 try:
                     buildObj(dst_name, rootobj[key], subnode, child_id)
                 except:
                     print(subnode)
-                    continue
 
                 subnode.data_schema = str(child_id) + ' ' + str(match_skyhook_datatype(subnode.datatype)) + ' 0 1 ' + subnode.name
                 data_schema = data_schema + str(child_id) + ' ' + str(match_skyhook_datatype(subnode.datatype)) + ' 0 1 ' + subnode.name + '; '
