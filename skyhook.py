@@ -94,6 +94,15 @@ class SkyhookDM:
                     cmd = cmd.replace('#startobj', str(obj_num))
                     cmds.append(cmd)
             return cmds
+        
+
+
+        def exeQuery(command):
+            prog = '/mnt/sda4/skyhookdm-ceph/build/bin/run-query '
+            import os
+            result = os.popen(prog + command).read()
+            return result
+
                 
         if 'File' in str(obj):
             cmds = generateQueryCommand(obj, querystr)
@@ -129,11 +138,6 @@ class SkyhookDM:
 
         
 
-        def exeQuery(command):
-            prog = '/mnt/sda4/skyhookdm-ceph/build/bin/run-query '
-            import os
-            result = os.popen(prog + command).read()
-            return result
 
         return None
     
