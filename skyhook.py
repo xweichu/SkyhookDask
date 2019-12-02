@@ -86,7 +86,7 @@ class SkyhookDM:
                     cmd = command_template
                     data_schema = '0 4 0 0 EVENT_ID;' + f_schema['data_schema'] + ';'
                     cmd = cmd.replace('#dataschema', data_schema)
-                    cmd = cmd.replace('#colname', br_name)
+                    cmd = cmd.replace('#colname', 'event_id,'+ br_name)
                     cmd = cmd.replace('#prefix', obj_prefix)
                     #limit the obj num to 1
                     cmd = cmd.replace('#objnum', str(obj_num + 1))
