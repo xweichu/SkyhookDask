@@ -50,10 +50,10 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         objname = str(obj_id)
         parent = subnode.parent
         while parent is not None:
-            objname = parent.name + '@' + objname
+            objname = parent.name + '#' + objname
             parent = parent.parent
         
-        objname = dst_name + '@' + objname
+        objname = dst_name + '#' + objname
 
         # this is for the event id colo
         event_id_col = pa.field('EVENT_ID', pa.int64())
@@ -192,7 +192,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         root_dir = uproot.open(path)
         #build objects and generate json file which dipicts the logical structure
         tree = RootNode(root_dir.name.decode("utf-8"), str(type(root_dir)).split('.')[-1].split('\'')[0], None, None, 0, None)
-        growTree(dstname + '@' + path.split('/')[-1], tree, root_dir)
+        growTree(dstname + '#' + path.split('/')[-1], tree, root_dir)
         logic_schema = tree_traversal(tree)
         return logic_schema
 

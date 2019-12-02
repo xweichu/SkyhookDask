@@ -46,7 +46,7 @@ class SkyhookDM:
         commands = []
 
         def generateQueryCommand(file, querystr):
-            prefix = file.dataset + '@' + file.name + '@' +file.ROOTDirectory
+            prefix = file.dataset + '#' + file.name + '#' +file.ROOTDirectory
             brs = querystr.split('project')[-1].split()[0].split(',')
             obj_num = 0
 
@@ -56,8 +56,8 @@ class SkyhookDM:
                 elems.remove(br_name)
                 local_prefix = ''
                 for elem in elems:
-                    local_prefix = local_prefix + '@' + elem
-                obj_prefix = prefix + '@' + local_prefix
+                    local_prefix = local_prefix + '#' + elem
+                obj_prefix = prefix + local_prefix
                 data_schema = ''
 
                 f_schema = file.getSchema()
