@@ -53,7 +53,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
             objname = parent.name + '#' + objname
             parent = parent.parent
         
-        objname = dst_name + '#' + objname
+        objname = dst_name + '.' + objname
 
         # this is for the event id colo
         event_id_col = pa.field('EVENT_ID', pa.int64())
