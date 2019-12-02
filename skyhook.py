@@ -83,11 +83,9 @@ class SkyhookDM:
                     cmd = command_template
                     data_schema = '0 4 0 0 EVENT_ID;' + f_schema['data_schema'].upper() + ';'
                     cmd = cmd.replace('#dataschema', data_schema)
-                    cmd = cmd.replace('#colname', br)
+                    cmd = cmd.replace('#colname', br_name.upper())
                     cmd = cmd.replace('#prefix', obj_prefix)
                     cmd = cmd.replace('#objnum', str(obj_num))
-
-                    # command = 'prefix:' + obj_prefix + '; data_schema:' + data_schema + '; obj_num:' + str(obj_num) + command_template
                     commands.append(cmd)
                 
         if 'File' in str(obj):
