@@ -106,10 +106,8 @@ class SkyhookDM:
         def exeQuery(command):
             prog = '/mnt/sda4/skyhookdm-ceph/build/bin/run-query '
             import os
-            import time
-            time.sleep(3)
-            # result = os.popen(prog + command).read()
-            result = prog + command
+            result = os.popen(prog + command).read()
+            # result = prog + command
             return result
 
         futures = []
@@ -119,11 +117,11 @@ class SkyhookDM:
         
         tablestreams = self.client.gather(futures)
 
-        # res = self._mergeTables(tablestreams)
+        res = self._mergeTables(tablestreams)
 
         print(tablestreams)
 
-        return 0
+        return res
     
     def _mergeTables(self, tablestreams):
         table = None
