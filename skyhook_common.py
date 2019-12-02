@@ -1,5 +1,6 @@
 import os
 import json
+import rados
 import uproot
 import dask.delayed
 import pyarrow as pa

@@ -1,6 +1,5 @@
 from skyhook_common import *
-import time
-import rados
+
 
 class SkyhookDM:
     def __init__(self):
@@ -85,13 +84,10 @@ class SkyhookDM:
                         break
                 
                 if found:
-                    data_schema = f_schema['data_schema']
+                    data_schema = '0 4 0 0 EVENT_ID;' + f_schema['data_schema']
                     command = 'prefix:' + obj_prefix + '; data_schema:' + data_schema + '; obj_num:' + str(obj_num) + command_template
                     commands.append(command)
                 
-
-
-
         if 'File' in str(obj):
             generateQueryCommand(obj, querystr)
         
@@ -102,55 +98,25 @@ class SkyhookDM:
             for rtfile in rtfiles:
                 generateQueryCommand(rtfile, querystr)
         
-        print(commands)
+        def exeQuery(command):
+            prog = '/mnt/sda4/skyhookdm-ceph/build/bin/run-query '
+            import os
+            import time
+            time.sleep(3)
+            # result = os.popen(prog + command).read()
+            result = prog + command
+            return result
 
-            # obj_prefix = obj.name + '@' + obj.name + '@' + obj.ROOTDirectory
-            # brs = querystr.split('project')[1].split()[0].split(',')
-
-            # def runOnDriver(objname):
-            #     tmppath = '/users/xweichu/projects/pool/'
-            #     bf = open(tmppath + objname, 'rb')
-            #     reader = pa.ipc.open_stream(bf)
-            #     batches = [b for b in reader]
-            #     table = pa.Table.from_batches(batches)
-            #     return str(table.schema)
-            
-            # futures = []
-
-            # for objname in objnames:
-            #     futures.append(self.client.submit(runOnDriver,objname))
-
-            # tables = self.client.gather(futures)
-            
-            # return tables
-        return 0
-    
-    # def getTreeSchema(self, file, path):
-    #     elems = path.split('.')
-    #     f_schema = file.getSchema()
-
-    #     i = 2
-    #     found = False
-
-    #     for i in range(len(elems) - 1):
-    #         for j in range(len(f_schema['children'])):
-    #             ch_sche = f_schema['children'][j]
-    #             if elems[i] == ch_sche['name']:
-    #                 f_schema = ch_sche
-    #                 break
+        futures = []
+        for command in commands:
+            future = self.client.submit(exeQuery, command)
+            futures.append(future)
         
-    #     for m in range(len(f_schema['children'])):
-    #         ch_sche = f_schema['children'][m]
-    #         if elems[-1] == ch_sche['name']:
-    #             found = True
-    #             break
+        tables = self.client.gather(futures)
 
-    #     treeSchema = ''
-    #     if found:
-    #         for child in f_schema['children']:
-    #             treeSchema = treeSchema + '; ' + child['node_id'] + ' 3 1 0 ' + child['name']
-    #     print(treeSchema)
-    #     return treeSchema
+        print(tables)
+
+        return 0
 
         
 

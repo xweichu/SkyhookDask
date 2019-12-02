@@ -80,3 +80,18 @@ buff = sink.getvalue()
 buff_bytes = buff.to_pybytes()
 
 # file location:http://uaf-1.t2.ucsd.edu/jeff_data/
+
+from skyhook import SkyhookDM
+sk = SkyhookDM()
+sk.connect('128.105.144.211')
+dst = sk.getDataset('dst')
+dst.getFiles()
+f = dst.getFiles()[0]
+sk.runQuery(f,'select event>X, project Events;1.Muon_dzErr,Events;1.SV_x,Events;1.Jet_puId')
+sk.runQuery(dst,'select event>X, project Events;1.Muon_dzErr,Events;1.SV_x,Events;1.Jet_puId')
+
+import pyarrow as pa
+buf = open('ss.no.endl.out.bin', 'rb')
+reader = pa.ipc.open_stream(buf)
+batches = [b for b in reader]
+tb = pa.Table.from_batches(batches)
