@@ -47,13 +47,13 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         from collections import OrderedDict 
         # change the name here to object_id which is the node_id
         # objname = branch.name.decode("utf-8")
-        objname = str(obj_id)
+        objname = '.' + str(obj_id)
         parent = subnode.parent
         while parent is not None:
             objname = parent.name + '#' + objname
             parent = parent.parent
         
-        objname = dst_name + '.' + objname
+        objname = dst_name + '#' + objname
 
         # this is for the event id colo
         event_id_col = pa.field('EVENT_ID', pa.int64())
