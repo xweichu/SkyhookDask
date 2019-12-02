@@ -41,17 +41,13 @@ class SkyhookDM:
         dataset = Dataset(data['dataset_name'], data['size'], files)
         return dataset
     
-    #Events;1.Jet_puId
-    #Events;1.SV_x
-    #testdata.nano_tree.root.Events;1.Muon_dzErr
-    
     def runQuery(self, obj, querystr):
-        command_template = ''
+        command_template = '--wthreads 1 --qdepth 10 --query hep --pool hepdatapool --start-obj 0 --output-format \"SFT_PYARROW_BINARY\" --data-schema \"#dataschema\" --project-cols \"#colname\" --num-objs #objnum --oid-prefix \"#prefix\"'
         commands = []
 
         def generateQueryCommand(file, querystr):
             prefix = file.dataset + '@' + file.name + '@' +file.ROOTDirectory
-            brs = querystr.split('project')[1].split()[0].split(',')
+            brs = querystr.split('project')[-1].split()[0].split(',')
             obj_num = 0
 
             for br in brs:
@@ -84,9 +80,15 @@ class SkyhookDM:
                         break
                 
                 if found:
-                    data_schema = '0 4 0 0 EVENT_ID;' + f_schema['data_schema']
-                    command = 'prefix:' + obj_prefix + '; data_schema:' + data_schema + '; obj_num:' + str(obj_num) + command_template
-                    commands.append(command)
+                    cmd = command_template
+                    data_schema = '0 4 0 0 EVENT_ID;' + f_schema['data_schema'].upper() + ';'
+                    cmd = cmd.replace('#dataschema', data_schema)
+                    cmd = cmd.replace('#colname', br)
+                    cmd = cmd.replace('#prefix', obj_prefix)
+                    cmd = cmd.replace('#objnum', str(obj_num))
+
+                    # command = 'prefix:' + obj_prefix + '; data_schema:' + data_schema + '; obj_num:' + str(obj_num) + command_template
+                    commands.append(cmd)
                 
         if 'File' in str(obj):
             generateQueryCommand(obj, querystr)
@@ -112,11 +114,26 @@ class SkyhookDM:
             future = self.client.submit(exeQuery, command)
             futures.append(future)
         
-        tables = self.client.gather(futures)
+        tablestreams = self.client.gather(futures)
 
-        print(tables)
+        # res = self._mergeTables(tablestreams)
+
+        print(tablestreams)
 
         return 0
+    
+    def _mergeTables(self, tablestreams):
+        table = None
+        for tablestream in tablestreams:
+            reader = pa.ipc.open_stream(tablestream)
+            batches = [b for b in reader]
+            tb = pa.Table.from_batches(batches)
+            if table == None:
+                table = tb
+            else:
+                table = table.append_column(tb.field(1), tb.columns[1])
+
+        return table
 
         
 

@@ -91,7 +91,41 @@ sk.runQuery(f,'select event>X, project Events;1.Muon_dzErr,Events;1.SV_x,Events;
 sk.runQuery(dst,'select event>X, project Events;1.Muon_dzErr,Events;1.SV_x,Events;1.Jet_puId')
 
 import pyarrow as pa
-buf = open('ss.no.endl.out.bin', 'rb')
+buf = open('sample_dataset@nano_dy.root@nano_tree.root@Events;1@683', 'rb')
 reader = pa.ipc.open_stream(buf)
 batches = [b for b in reader]
-tb = pa.Table.from_batches(batches)
+tb1 = pa.Table.from_batches(batches)
+
+buf = open('sample_dataset@nano_dy.root@nano_tree.root@Events;1@688', 'rb')
+reader = pa.ipc.open_stream(buf)
+batches = [b for b in reader]
+tb2 = pa.Table.from_batches(batches)
+
+buf = open('sample_dataset@nano_dy.root@nano_tree.root@Events;1@375', 'rb')
+reader = pa.ipc.open_stream(buf)
+batches = [b for b in reader]
+tb3 = pa.Table.from_batches(batches)
+
+tb = tb1.append_column(tb2.field(1), tb2.columns[1])
+tb = tb.append_column(tb3.field(1), tb3.columns[1])
+
+    #Events;1.Jet_puId
+    #Events;1.SV_x
+    #testdata.nano_tree.root.Events;1.Muon_dzErr
+
+# sample command
+# bin/run-query    
+# --wthreads 1 
+# --qdepth 10 
+# --query hep
+# --pool testpool 
+# --data-schema "0 3 0 0 col1;"
+# --project-cols "col1"   // optional
+# --select-preds "col1,gt,5;eventid,geq0;eventid,lt,5" //optional
+# --num-objs 5
+# --start-obj 0
+# --output-format "SFT_PYARROW_BINARY"
+# --oid-prefix "dataset.tree.tree"  // this will generate 5 objs numbered dataset.tree.tree.0,1,2,3,4
+
+
+# bin/run-query --wthreads 1 --qdepth 10 --query hep --pool testpool --start-obj 0 --output-format "SFT_PYARROW_BINARY" --data-schema "0 3 0 0 col1;" --project-cols "col1" --num-objs 5 --oid-prefix "dataset.tree.tree"
