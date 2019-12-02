@@ -68,8 +68,8 @@ data = json.loads(data)
 
 from skyhook import SkyhookDM
 sk = SkyhookDM()
-sk.connect('128.105.144.211')
-sk.writeDataset('/users/xweichu/projects/dst', 'testdst')
+sk.connect('128.105.144.228')
+sk.writeDataset('/users/xweichu/projects/testdata', 'testdst')
 
 batches = table.to_batches()
 sink = pa.BufferOutputStream()
@@ -129,3 +129,39 @@ tb = tb.append_column(tb3.field(1), tb3.columns[1])
 
 
 # bin/run-query --wthreads 1 --qdepth 10 --query hep --pool testpool --start-obj 0 --output-format "SFT_PYARROW_BINARY" --data-schema "0 3 0 0 col1;" --project-cols "col1" --num-objs 5 --oid-prefix "dataset.tree.tree"
+
+
+# /mnt/sda4/skyhookdm-ceph/build/bin/run-query --num-objs 1 --pool hep --wthreads 1 --qdepth 10   --output-format SFT_PYARROW_BINARY --query hep --use-cls --data-schema "0 4 0 0  EVENT_ID;388 11 0 1 HLT_AK8PFHT900_TrimMass50;" --project-cols "event_id,HLT_AK8PFHT900_TrimMass50"
+
+#list objs : rados --pool hepdatapool ls -
+
+import rados
+cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+cluster.connect()
+ioctx = cluster.open_ioctx('hepdatapool')
+name = 'testdst#nano_dy.root#nano_tree.root#Events;1#.388'
+size = ioctx.get_xattr(name, "size")
+data = ioctx.read(name, length = int(size))
+import pyarrow as pa
+buf = data
+reader = pa.ipc.open_stream(buf)
+batches = [b for b in reader]
+tb1 = pa.Table.from_batches(batches)
+
+
+
+
+prog = '/mnt/sda4/skyhookdm-ceph/build/bin/run-query '
+command = '--num-objs 1 --pool jeff --wthreads 1 --qdepth 10   --output-format SFT_PYARROW_BINARY --query hep --use-cls --data-schema \"0 4 0 0  EVENT_ID;388 11 0 1 HLT_AK8PFHT900_TrimMass50;\" --project-cols \"event_id,HLT_AK8PFHT900_TrimMass50\"'
+command = '--num-objs 1 --pool jeff --wthreads 1 --qdepth 10   --output-format SFT_PYARROW_BINARY --query hep --use-cls --data-schema \"0 4 0 0  EVENT_ID;388 11 0 1 HLT_AK8PFHT900_TrimMass50;\" --project-cols \"event_id,HLT_AK8PFHT900_TrimMass50\"'
+import os
+result = os.popen(prog + command).read()
+
+
+from skyhook import SkyhookDM
+sk = SkyhookDM()
+sk.connect('128.105.144.228')
+dst = sk.getDataset('testdst')
+dst.getFiles()
+f = dst.getFiles()[0]
+sk.runQuery(f,'select event>X, project Events;1.HLT_AK8PFHT900_TrimMass50,Events;1.HLT_AK8PFHT900_TrimMass50,Events;1.HLT_AK8PFHT900_TrimMass50')

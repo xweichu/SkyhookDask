@@ -119,7 +119,7 @@ class SkyhookDM:
 
         res = self._mergeTables(tablestreams)
 
-        print(tablestreams)
+        # print(tablestreams)
 
         return res
     
