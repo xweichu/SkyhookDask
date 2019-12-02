@@ -44,9 +44,10 @@ class SkyhookDM:
     def runQuery(self, obj, querystr):
         #limit just to 1 obj
         command_template = '--wthreads 1 --qdepth 10 --query hep --pool hepdatapool --start-obj #startobj --output-format \"SFT_PYARROW_BINARY\" --data-schema \"#dataschema\" --project-cols \"#colname\" --num-objs #objnum --oid-prefix \"#prefix\"'
-        commands = []
+
 
         def generateQueryCommand(file, querystr):
+            cmds = []
             prefix = file.dataset + '#' + file.name + '#' +file.ROOTDirectory
             brs = querystr.split('project')[-1].split()[0].split(',')
             obj_num = 0
@@ -91,37 +92,50 @@ class SkyhookDM:
                     #limit the obj num to 1
                     cmd = cmd.replace('#objnum', str(obj_num + 1))
                     cmd = cmd.replace('#startobj', str(obj_num))
-                    commands.append(cmd)
+                    cmds.append(cmd)
+            return cmds
                 
         if 'File' in str(obj):
-            generateQueryCommand(obj, querystr)
+            cmds = generateQueryCommand(obj, querystr)
+            futures = []
+            for command in cmds:
+                future = self.client.submit(exeQuery, command)
+                futures.append(future)
+
+            tablestreams = self.client.gather(futures)
+            res = self._mergeTables(tablestreams)
+            return res
         
         if 'Dataset' in str(obj):
 
             rtfiles = obj.getFiles()
+            tables = []
+            futures_set = []
 
             for rtfile in rtfiles:
-                generateQueryCommand(rtfile, querystr)
+                cmds = generateQueryCommand(rtfile, querystr)
+                futures = []
+                for command in cmds:
+                    future = self.client.submit(exeQuery, command)
+                    futures.append(future)
+                futures_set.append(futures)
+
+            for futures in futures_set:
+                tablestreams = self.client.gather(futures)
+                res = self._mergeTables(tablestreams)
+                tables.append(res)
+            
+            return tables
+
         
+
         def exeQuery(command):
             prog = '/mnt/sda4/skyhookdm-ceph/build/bin/run-query '
             import os
             result = os.popen(prog + command).read()
-            # result = prog + command
             return result
 
-        futures = []
-        for command in commands:
-            future = self.client.submit(exeQuery, command)
-            futures.append(future)
-        
-        tablestreams = self.client.gather(futures)
-
-        res = self._mergeTables(tablestreams)
-
-        # print(tablestreams)
-
-        return res
+        return None
     
     def _mergeTables(self, tablestreams):
         table = None

@@ -69,7 +69,7 @@ data = json.loads(data)
 from skyhook import SkyhookDM
 sk = SkyhookDM()
 sk.connect('128.105.144.228')
-sk.writeDataset('/users/xweichu/projects/testdata', 'testdst')
+sk.writeDataset('/users/xweichu/projects/dst', 'exampledst')
 
 batches = table.to_batches()
 sink = pa.BufferOutputStream()
@@ -161,7 +161,8 @@ result = os.popen(prog + command).read()
 from skyhook import SkyhookDM
 sk = SkyhookDM()
 sk.connect('128.105.144.228')
-dst = sk.getDataset('testdst')
+dst = sk.getDataset('exampledst')
 dst.getFiles()
 f = dst.getFiles()[0]
+sk.runQuery(f,'select event>X, project Events;1.Muon_dzErr,Events;1.SV_x,Events;1.Jet_puId')
 sk.runQuery(f,'select event>X, project Events;1.HLT_AK8PFHT900_TrimMass50,Events;1.HLT_AK8PFHT900_TrimMass50,Events;1.HLT_AK8PFHT900_TrimMass50')
