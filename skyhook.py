@@ -42,7 +42,8 @@ class SkyhookDM:
         return dataset
     
     def runQuery(self, obj, querystr):
-        command_template = '--wthreads 1 --qdepth 10 --query hep --pool hepdatapool --start-obj 0 --output-format \"SFT_PYARROW_BINARY\" --data-schema \"#dataschema\" --project-cols \"#colname\" --num-objs #objnum --oid-prefix \"#prefix\"'
+        #limit just to 1 obj
+        command_template = '--wthreads 1 --qdepth 10 --query hep --pool hepdatapool --start-obj #startobj --output-format \"SFT_PYARROW_BINARY\" --data-schema \"#dataschema\" --project-cols \"#colname\" --num-objs #objnum --oid-prefix \"#prefix\"'
         commands = []
 
         def generateQueryCommand(file, querystr):
@@ -57,7 +58,7 @@ class SkyhookDM:
                 local_prefix = ''
                 for elem in elems:
                     local_prefix = local_prefix + '#' + elem
-                obj_prefix = prefix + local_prefix
+                obj_prefix = prefix + local_prefix + '#'
                 data_schema = ''
 
                 f_schema = file.getSchema()
@@ -77,15 +78,19 @@ class SkyhookDM:
                     if br_name == ch_sche['name']:
                         found = True
                         f_schema = ch_sche
+                        #limit the obj num to 1
+                        obj_num = m
                         break
                 
                 if found:
                     cmd = command_template
-                    data_schema = '0 4 0 0 EVENT_ID;' + f_schema['data_schema'].upper() + ';'
+                    data_schema = '0 4 0 0 EVENT_ID;' + f_schema['data_schema'] + ';'
                     cmd = cmd.replace('#dataschema', data_schema)
-                    cmd = cmd.replace('#colname', br_name.upper())
+                    cmd = cmd.replace('#colname', br_name)
                     cmd = cmd.replace('#prefix', obj_prefix)
-                    cmd = cmd.replace('#objnum', str(obj_num))
+                    #limit the obj num to 1
+                    cmd = cmd.replace('#objnum', str(obj_num + 1))
+                    cmd = cmd.replace('#startobj', str(obj_num))
                     commands.append(cmd)
                 
         if 'File' in str(obj):
