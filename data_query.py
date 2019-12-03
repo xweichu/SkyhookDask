@@ -164,5 +164,9 @@ sk.connect('128.105.144.228')
 dst = sk.getDataset('exampledst')
 dst.getFiles()
 f = dst.getFiles()[0]
-sk.runQuery(f,'select event>X, project Events;1.Muon_dzErr,Events;1.SV_x,Events;1.Jet_puId')
-sk.runQuery(f,'select event>X, project Events;1.HLT_AK8PFHT900_TrimMass50,Events;1.HLT_AK8PFHT900_TrimMass50,Events;1.HLT_AK8PFHT900_TrimMass50')
+# sk.runQuery(f,'select event>X, project Events;1.Muon_dzErr,Events;1.SV_x,Events;1.Jet_puId')
+# sk.runQuery(dst,'select event>X, project Events;1.Muon_dzErr,Events;1.SV_x,Events;1.Jet_puId')
+# sk.runQuery(dst,'select event>X, project Events;1.HLT_AK8PFHT900_TrimMass50,Events;1.HLT_AK8PFHT900_TrimMass50,Events;1.HLT_AK8PFHT900_TrimMass50')
+
+table = sk.runQuery(f,'select event>X, project Events;1.Muon_dzErr,Events;1.SV_x,Events;1.Jet_puId,Events;1.HLT_AK8PFHT900_TrimMass50,Events;1.FatJet_n3b1')
+tables = sk.runQuery(dst,'select event>X, project Events;1.Muon_dzErr,Events;1.SV_x,Events;1.Jet_puId,Events;1.HLT_AK8PFHT900_TrimMass50,Events;1.FatJet_n3b1')
