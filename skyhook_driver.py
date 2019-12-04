@@ -136,6 +136,8 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         except Exception,e:
             print(str(len(buff_bytes)))
             print("number of batches:" + str(len(batches)))
+            sub = pa.Table.from_batches([batches[1]])
+            print(sub.schema)
             import zlib
             compressed_data = zlib.compress(buff_bytes)
             print("compressed:" + str(len(compressed_data)))
