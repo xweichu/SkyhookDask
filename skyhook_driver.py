@@ -124,14 +124,17 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         #data should be written into the ceph pools
         #for now writ the data into 'data' which is a local folder
       
-        # Write to the Ceph pool
-        cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
-        cluster.connect()
-        ioctx = cluster.open_ioctx('hepdatapool')
-        ioctx.write_full(objname, buff_bytes)
-        ioctx.set_xattr(objname, 'size', str(len(buff_bytes)))
-        ioctx.close()
-        cluster.shutdown()
+        try:
+            # Write to the Ceph pool
+            cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+            cluster.connect()
+            ioctx = cluster.open_ioctx('hepdatapool')
+            ioctx.write_full(objname, buff_bytes)
+            ioctx.set_xattr(objname, 'size', str(len(buff_bytes)))
+            ioctx.close()
+            cluster.shutdown()
+        except Exception,e:
+            print(str(len(buff_bytes)))
 
         #writ it to local folder 
         # cephobj = open('/users/xweichu/projects/pool/'+objname,'wb+')
