@@ -135,6 +135,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
             cluster.shutdown()
         except Exception,e:
             print(str(len(buff_bytes)))
+            print("number of batches:" + str(len(batches)))
             import zlib
             compressed_data = zlib.compress(buff_bytes)
             print("compressed:" + str(len(compressed_data)))

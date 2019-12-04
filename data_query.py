@@ -69,7 +69,7 @@ data = json.loads(data)
 from skyhook import SkyhookDM
 sk = SkyhookDM()
 sk.connect('128.105.144.228')
-sk.writeDataset('/users/xweichu/projects/dst', 'exampledst')
+sk.writeDataset('/users/xweichu/projects/aod', 'aod')
 
 batches = table.to_batches()
 sink = pa.BufferOutputStream()
