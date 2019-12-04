@@ -135,6 +135,9 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
             cluster.shutdown()
         except Exception,e:
             print(str(len(buff_bytes)))
+            import zlib
+            compressed_data = zlib.compress(buff_bytes)
+            print("compressed:" + str(len(compressed_data)))
 
         #writ it to local folder 
         # cephobj = open('/users/xweichu/projects/pool/'+objname,'wb+')
