@@ -127,6 +127,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         size_limit = 238000000
         
         num_partitions = 1
+
         if len(buff_bytes) > size_limit:
             total_rows = len(table.columns[0])
             num_partitions = len(buff_bytes)/size_limit
@@ -160,6 +161,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
                     buff_bytes = buff.to_pybytes()
                     ioctx.write_full(objname + '.' + str(i), buff_bytes)
                     ioctx.set_xattr(objname + '.' + str(i), 'size', str(len(buff_bytes)))
+                    i += 1
                 ioctx.close()
                 cluster.shutdown()
 
