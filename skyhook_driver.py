@@ -113,7 +113,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         table = pa.Table.from_arrays([id_array, branch.array().tolist()],schema = schema)
         
         #Serialize arrow table to bytes
-        batches = table.to_batches()
+        batches = table.to_batches(20000000)
         sink = pa.BufferOutputStream()
         writer = pa.RecordBatchStreamWriter(sink, schema)
         for batch in batches:
