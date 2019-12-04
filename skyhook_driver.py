@@ -129,7 +129,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
         num_partitions = 1
         if len(buff_bytes) > size_limit:
             total_rows = len(table.columns[0])
-            num_partitions = buff_bytes/size_limit
+            num_partitions = len(buff_bytes)/size_limit
             num_partitions += 1
             batch_size = total_rows/num_partitions
             batches = table.to_batches(batch_size)
@@ -143,7 +143,7 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
                 cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
                 cluster.connect()
                 ioctx = cluster.open_ioctx('hepdatapool')
-                ioctx.write_full(objname, buff_bytes)
+                ioctx.write_full(objname + '.0', buff_bytes)
                 ioctx.set_xattr(objname + '.0', 'size', str(len(buff_bytes)))
                 ioctx.close()
                 cluster.shutdown()
