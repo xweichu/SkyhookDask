@@ -111,28 +111,60 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
 
         schema = schema.with_metadata(sche_meta)
         table = pa.Table.from_arrays([id_array, branch.array().tolist()],schema = schema)
-        
+
+       
         #Serialize arrow table to bytes
-        batches = table.to_batches(20000000)
+        batches = table.to_batches()
         sink = pa.BufferOutputStream()
         writer = pa.RecordBatchStreamWriter(sink, schema)
+
         for batch in batches:
             writer.write_batch(batch)
         buff = sink.getvalue()
         buff_bytes = buff.to_pybytes()
+
+        
+        size_limit = 238000000
+        
+        num_partitions = 1
+        if len(buff_bytes) > size_limit:
+            total_rows = len(table.columns[0])
+            num_partitions = buff_bytes/size_limit
+            num_partitions += 1
+            batch_size = total_rows/num_partitions
+            batches = table.to_batches(batch_size)
+        
         
         #data should be written into the ceph pools
         #for now writ the data into 'data' which is a local folder
-      
         try:
+            if num_partitions == 1:
             # Write to the Ceph pool
-            cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
-            cluster.connect()
-            ioctx = cluster.open_ioctx('hepdatapool')
-            ioctx.write_full(objname, buff_bytes)
-            ioctx.set_xattr(objname, 'size', str(len(buff_bytes)))
-            ioctx.close()
-            cluster.shutdown()
+                cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+                cluster.connect()
+                ioctx = cluster.open_ioctx('hepdatapool')
+                ioctx.write_full(objname, buff_bytes)
+                ioctx.set_xattr(objname + '.0', 'size', str(len(buff_bytes)))
+                ioctx.close()
+                cluster.shutdown()
+            else:
+                cluster = rados.Rados(conffile='/etc/ceph/ceph.conf')
+                cluster.connect()
+                ioctx = cluster.open_ioctx('hepdatapool')
+                i = 0
+                for batch in batches:
+                    sink = pa.BufferOutputStream()
+                    writer = pa.RecordBatchStreamWriter(sink, schema)
+                    writer.write_batch(batch)
+                    buff = sink.getvalue()
+                    buff_bytes = buff.to_pybytes()
+                    ioctx.write_full(objname + '.' + str(i), buff_bytes)
+                    ioctx.set_xattr(objname + '.' + str(i), 'size', str(len(buff_bytes)))
+                ioctx.close()
+                cluster.shutdown()
+
+
+
         except Exception,e:
             print(str(len(buff_bytes)))
             print("number of batches:" + str(len(batches)))
