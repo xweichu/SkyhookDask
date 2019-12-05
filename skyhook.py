@@ -136,12 +136,6 @@ class SkyhookDM:
                         batches.append(b)
                 
                 #sort batches
-                def index(batch1, batch2):
-                    tb1 = pa.Table.from_batches([batch1.slice(0,1)])
-                    tb2 = pa.Table.from_batches([batch2.slice(0,1)])
-                    print(tb1.columns[0][0].as_py() > tb2.columns[0][0].as_py())
-                    return tb1.columns[0][0].as_py() > tb2.columns[0][0].as_py()
-                
                 def mykey(batch):
                     tb = pa.Table.from_batches([batch.slice(0,1)])
                     return tb.columns[0][0].as_py()
@@ -151,7 +145,8 @@ class SkyhookDM:
                 table = pa.Table.from_batches(batches)
                 tables.append(table)
 
-            res = tables
+            res = self._mergeTables(tables)
+
             return res
         
         if 'Dataset' in str(obj):
@@ -180,18 +175,15 @@ class SkyhookDM:
 
         return None
     
-    def _mergeTables(self, tablestreams):
-        table = None
-        for tablestream in tablestreams:
-            reader = pa.ipc.open_stream(tablestream)
-            batches = [b for b in reader]
-            tb = pa.Table.from_batches(batches)
-            if table == None:
-                table = tb
+    def _mergeTables(self, tables):
+        bigtable = None
+        for table in tables:
+            if bigtable == None:
+                bigtable = table
             else:
-                table = table.append_column(tb.field(1), tb.columns[1])
+                bigtable = bigtable.append_column(table.field(1), table.columns[1])
 
-        return table
+        return bigtable
     
     def _extendTables(self, tablestreams):
         table = None
