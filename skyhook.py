@@ -142,7 +142,11 @@ class SkyhookDM:
                     print(tb1.columns[0][0].as_py() > tb2.columns[0][0].as_py())
                     return tb1.columns[0][0].as_py() > tb2.columns[0][0].as_py()
                 
-                batches = sorted(batches,index)
+                def mykey(batch):
+                    tb = pa.Table.from_batches([batch.slice(0,1)])
+                    return tb.columns[0][0].as_py()
+                
+                batches = sorted(batches,key=mykey)
 
                 table = pa.Table.from_batches(batches)
                 tables.append(table)
