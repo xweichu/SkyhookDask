@@ -1,4 +1,5 @@
 from skyhook_common import *
+import struct
 
 
 class SkyhookDM:
@@ -62,7 +63,7 @@ class SkyhookDM:
                 obj_prefix = prefix + local_prefix + '#'
                 data_schema = ''
                 
-                print(obj_prefix)
+                # print(obj_prefix)
 
                 f_schema = file.getSchema()
                 found = False
@@ -108,14 +109,38 @@ class SkyhookDM:
                 
         if 'File' in str(obj):
             cmds = generateQueryCommand(obj, querystr)
-            print(cmds)
             futures = []
             for command in cmds:
                 future = self.client.submit(exeQuery, command)
                 futures.append(future)
 
             tablestreams = self.client.gather(futures)
-            res = self._mergeTables(tablestreams)
+            tables = []
+
+            for tablestream in tablestreams:
+                sizebf = None
+                stream_length = len(tablestream)
+                cursor = 0
+                batches = []
+
+                while True:
+                    if cursor == stream_length:
+                        break
+                    sizebf = tablestream[cursor:cursor+4]
+                    cursor = cursor + 4
+                    size = struct.unpack("<i",sizebf)[0]
+                    stream = tablestream[cursor:cursor+size]
+                    cursor = cursor + size
+                    reader = pa.ipc.open_stream(stream)
+                    for b in reader:
+                        batches.append(b)
+
+                table = pa.Table.from_batches(batches)
+                tables.append(table)
+
+
+            # res = self._extendTables(tablestreams)
+            res = tables
             return res
         
         if 'Dataset' in str(obj):
