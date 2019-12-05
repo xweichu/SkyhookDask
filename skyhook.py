@@ -105,7 +105,7 @@ class SkyhookDM:
             import os
             result = os.popen(prog + command).read()
             return result
-
+            
 
         def _mergeTables(tables):
             bigtable = None
@@ -116,11 +116,10 @@ class SkyhookDM:
                     bigtable = bigtable.append_column(table.field(1), table.columns[1])
 
             return bigtable
-            
+
 
         def fileQuery(obj, querystr):
-            cmds = self.client.submit(generateQueryCommand, obj, querystr)
-            cmds = cmds.result()
+            cmds = generateQueryCommand(obj, querystr)
             futures = []
             for command in cmds:
                 future = self.client.submit(exeQuery, command)
@@ -157,10 +156,9 @@ class SkyhookDM:
                 table = pa.Table.from_batches(batches)
                 tables.append(table)
 
-            res = self.client.submit(_mergeTables, tables)
-            res = res.result()
+            res = _mergeTables(tables)
 
-            return res.to_dict()
+            return res
 
                 
         if 'File' in str(obj):
