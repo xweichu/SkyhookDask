@@ -158,20 +158,13 @@ class SkyhookDM:
 
             rtfiles = obj.getFiles()
             tables = []
-            futures_set = []
+            futures = []
 
             for rtfile in rtfiles:
-                cmds = generateQueryCommand(rtfile, querystr)
-                futures = []
-                for command in cmds:
-                    future = self.client.submit(exeQuery, command)
-                    futures.append(future)
-                futures_set.append(futures)
-
-            for futures in futures_set:
-                tablestreams = self.client.gather(futures)
-                res = self._mergeTables(tablestreams)
-                tables.append(res)
+                future = self.client.submit(fileQuery, rtfile, querystr)
+                futures.append(future)
+            
+            tables = self.client.gather(futures)
             
             return tables
 
