@@ -43,7 +43,7 @@ class SkyhookDM:
     
     def runQuery(self, obj, querystr):
         #limit just to 1 obj
-        command_template = '--wthreads 1 --qdepth 10 --query hep --pool hepdatapool --start-obj #startobj --output-format \"SFT_PYARROW_BINARY\" --data-schema \"#dataschema\" --project-cols \"#colname\" --num-objs #objnum --oid-prefix \"#prefix\"'
+        command_template = '--wthreads 1 --qdepth 120 --query hep --pool hepdatapool --start-obj #startobj --output-format \"SFT_PYARROW_BINARY\" --data-schema \"#dataschema\" --project-cols \"#colname\" --num-objs #objnum --oid-prefix \"#prefix\" --subpartitions 10'
 
 
         def generateQueryCommand(file, querystr):
@@ -90,7 +90,7 @@ class SkyhookDM:
                     cmd = cmd.replace('#colname', 'event_id,'+ br_name)
                     cmd = cmd.replace('#prefix', obj_prefix)
                     #limit the obj num to 1
-                    cmd = cmd.replace('#objnum', str(obj_num + 1))
+                    cmd = cmd.replace('#objnum', str(1))
                     cmd = cmd.replace('#startobj', str(obj_num))
                     cmds.append(cmd)
             return cmds
@@ -106,6 +106,7 @@ class SkyhookDM:
                 
         if 'File' in str(obj):
             cmds = generateQueryCommand(obj, querystr)
+            print(cmds)
             futures = []
             for command in cmds:
                 future = self.client.submit(exeQuery, command)
@@ -151,6 +152,18 @@ class SkyhookDM:
                 table = tb
             else:
                 table = table.append_column(tb.field(1), tb.columns[1])
+
+        return table
+    
+    def _extendTables(self, tablestreams):
+        table = None
+        batches = []
+        for tablestream in tablestreams:
+            reader = pa.ipc.open_stream(tablestream)
+            for b in reader:
+                batches.append(b)
+        
+        table = pa.Table.from_batches(batches)
 
         return table
 
