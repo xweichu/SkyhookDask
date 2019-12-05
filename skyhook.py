@@ -169,16 +169,12 @@ class SkyhookDM:
 
             rtfiles = obj.getFiles()
             tables = []
-            futures = []
 
             for rtfile in rtfiles:
-                future = self.client.submit(fileQuery, rtfile, querystr)
-                futures.append(future)
-            
-            tables = self.client.gather(futures)
+                table = fileQuery(rtfile, querystr)
+                tables.append(table)
             
             return tables
-
         
         return None
     

@@ -2,7 +2,7 @@
 #Copy to /usr/lib/python2.7/ so that it can be imported anywhere 
 from skyhook_common import *
 
-def writeDataset(path, dstname, addr, dst_type = 'root'):
+def writeDataset(file_urls, dstname, addr, dst_type = 'root'):
  
     #internal functions
     def match_skyhook_datatype(d_type):
@@ -233,19 +233,31 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
             output["children"].append(tree_traversal(node))
         return output
 
-    def process_file(path):
-        root_dir = uproot.open(path)
+    def process_file(url):
+        import wget
+        filename = wget.download(url)
+        root_dir = uproot.open(filename)
+
+        stat_res = os.stat(filename)
+        stat_res_dict = {}
+        stat_res_dict['size'] = stat_res.st_size
+        stat_res_dict['last access time'] = stat_res.st_atime
+        stat_res_dict['last modified time'] = stat_res.st_mtime
+        stat_res_dict['last changed time'] = stat_res.st_ctime
+
+        #stat_json = json.dumps(stat_res_dict)
         #build objects and generate json file which dipicts the logical structure
         tree = RootNode(root_dir.name.decode("utf-8"), str(type(root_dir)).split('.')[-1].split('\'')[0], None, None, 0, None)
-        growTree(dstname + '#' + path.split('/')[-1], tree, root_dir)
+        growTree(dstname + '#' + filename, tree, root_dir)
         logic_schema = tree_traversal(tree)
-        return logic_schema
+        os.remove(filename)
+        return stat_res_dict, logic_schema
 
     client = Client(addr)
     #for now, the path is a local path on the driver server
     #suppose the file has been downlaoded
     #get the list of files in the path location and is the dst_type
-    file_list = [f for f in listdir(path) if isfile(join(path, f)) and dst_type in f]
+    file_list = file_urls
     
     #dataset name is the last dir name, it can be -2
     # dstname = dstname
@@ -267,31 +279,33 @@ def writeDataset(path, dstname, addr, dst_type = 'root'):
     for r_file in file_list:
         file_meta = {}
         file_meta['name'] = r_file
-        file_meta['ROOTDirectory'] = uproot.open(join(path, r_file)).name
+        file_meta['ROOTDirectory'] = uproot.open(r_file).name
         #read the file attributes based on the stat() info
-        stat_res = os.stat(join(path, r_file))
-        stat_res_dict = {}
-        stat_res_dict['size'] = stat_res.st_size
-        total_size += stat_res.st_size
-        stat_res_dict['last access time'] = stat_res.st_atime
-        stat_res_dict['last modified time'] = stat_res.st_mtime
-        stat_res_dict['last changed time'] = stat_res.st_ctime
-        #stat_json = json.dumps(stat_res_dict)
-        file_meta['file_attributes'] = stat_res_dict
+        # stat_res = os.stat(join(path, r_file))
+        # stat_res_dict = {}
+        # stat_res_dict['size'] = stat_res.st_size
+        # total_size += stat_res.st_size
+        # stat_res_dict['last access time'] = stat_res.st_atime
+        # stat_res_dict['last modified time'] = stat_res.st_mtime
+        # stat_res_dict['last changed time'] = stat_res.st_ctime
+        # #stat_json = json.dumps(stat_res_dict)
+        # file_meta['file_attributes'] = stat_res_dict
         
-        future = client.submit(process_file, join(path, r_file))
+        future = client.submit(process_file, r_file)
 
         #logic_struct_json = json.dumps(logic_struct)
-        file_meta['file_schema'] = 'future'
+        # file_meta['file_schema'] = 'future'
         futures.append(future)
         
         metadata['files'].append(file_meta)
     
-    schemas = client.gather(futures)
+    stat_res_dicts, schemas = client.gather(futures)
 
     i = 0
     for item in metadata['files']:
         item['file_schema'] = schemas[i]
+        item['file_attributes'] = stat_res_dicts[i]
+        total_size += int(stat_res_dicts[i]['size'])
         i += 1
     
     metadata['size'] = total_size
