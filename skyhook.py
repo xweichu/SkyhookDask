@@ -61,6 +61,8 @@ class SkyhookDM:
                     local_prefix = local_prefix + '#' + elem
                 obj_prefix = prefix + local_prefix + '#'
                 data_schema = ''
+                
+                print(obj_prefix)
 
                 f_schema = file.getSchema()
                 found = False
