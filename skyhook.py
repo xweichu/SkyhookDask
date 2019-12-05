@@ -141,7 +141,7 @@ class SkyhookDM:
                     tb2 = pa.Table.from_batches([batch2.slice(0,1)])
                     return tb1.columns[0][0] > tb2.columns[0][0]
                 
-                sorted(batches,index)
+                batches = sorted(batches,index)
 
                 table = pa.Table.from_batches(batches)
                 tables.append(table)
