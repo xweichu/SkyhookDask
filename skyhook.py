@@ -160,7 +160,7 @@ class SkyhookDM:
             res = self.client.submit(_mergeTables, tables)
             res = res.result()
 
-            return res
+            return res.to_dict()
 
                 
         if 'File' in str(obj):
