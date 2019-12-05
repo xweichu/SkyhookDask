@@ -151,7 +151,9 @@ class SkyhookDM:
 
                 
         if 'File' in str(obj):
-            res = fileQuery(obj, querystr)
+            res = self.client.submit(fileQuery,obj,querystr)
+            res = res.result()
+            # res = fileQuery(obj, querystr)
             return res
         
         if 'Dataset' in str(obj):
