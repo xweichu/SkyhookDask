@@ -251,7 +251,8 @@ def writeDataset(file_urls, dstname, addr, dst_type = 'root'):
         growTree(dstname + '#' + filename, tree, root_dir)
         logic_schema = tree_traversal(tree)
         os.remove(filename)
-        return stat_res_dict, logic_schema
+        res = [stat_res_dict, logic_schema]
+        return res
 
     client = Client(addr)
     #for now, the path is a local path on the driver server
@@ -299,13 +300,13 @@ def writeDataset(file_urls, dstname, addr, dst_type = 'root'):
         
         metadata['files'].append(file_meta)
     
-    stat_res_dicts, schemas = client.gather(futures)
+    res = client.gather(futures)
 
     i = 0
     for item in metadata['files']:
-        item['file_schema'] = schemas[i]
-        item['file_attributes'] = stat_res_dicts[i]
-        total_size += int(stat_res_dicts[i]['size'])
+        item['file_schema'] = res[i][1]
+        item['file_attributes'] = res[i][0]
+        total_size += int(res[i][0]['size'])
         i += 1
     
     metadata['size'] = total_size
