@@ -108,7 +108,8 @@ class SkyhookDM:
 
 
         def fileQuery(obj, querystr):
-            cmds = generateQueryCommand(obj, querystr)
+            cmds = self.client.submit(generateQueryCommand, obj, querystr)
+            cmds = cmds.result()
             futures = []
             for command in cmds:
                 future = self.client.submit(exeQuery, command)
@@ -145,15 +146,14 @@ class SkyhookDM:
                 table = pa.Table.from_batches(batches)
                 tables.append(table)
 
-            res = self._mergeTables(tables)
+            res = self.client.submit(_mergeTables, tables)
+            res = res.result()
 
             return res
 
                 
         if 'File' in str(obj):
-            res = self.client.submit(fileQuery,obj,querystr)
-            res = res.result()
-            # res = fileQuery(obj, querystr)
+            res = fileQuery(obj, querystr)
             return res
         
         if 'Dataset' in str(obj):
@@ -173,16 +173,16 @@ class SkyhookDM:
         
         return None
     
-    def _mergeTables(self, tables):
-        bigtable = None
-        for table in tables:
-            if bigtable == None:
-                bigtable = table
-            else:
-                bigtable = bigtable.append_column(table.field(1), table.columns[1])
+        def _mergeTables(tables):
+            bigtable = None
+            for table in tables:
+                if bigtable == None:
+                    bigtable = table
+                else:
+                    bigtable = bigtable.append_column(table.field(1), table.columns[1])
 
-        return bigtable
-        
+            return bigtable
+            
 
 
 
