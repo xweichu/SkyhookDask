@@ -168,8 +168,9 @@ def writeDataset(file_urls, dstname, addr, dst_type = 'root'):
 
 
         except Exception,e:
+            print(str(e))
             # print(str(len(buff_bytes)))
-            print("number of batches:" + str(len(batches)))
+            # print("number of batches:" + str(len(batches)))
             # sub = pa.Table.from_batches([batches[1]])
             # print(sub.schema)
             # import zlib
