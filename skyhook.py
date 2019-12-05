@@ -107,6 +107,17 @@ class SkyhookDM:
             return result
 
 
+        def _mergeTables(tables):
+            bigtable = None
+            for table in tables:
+                if bigtable == None:
+                    bigtable = table
+                else:
+                    bigtable = bigtable.append_column(table.field(1), table.columns[1])
+
+            return bigtable
+            
+
         def fileQuery(obj, querystr):
             cmds = self.client.submit(generateQueryCommand, obj, querystr)
             cmds = cmds.result()
@@ -173,15 +184,7 @@ class SkyhookDM:
         
         return None
     
-        def _mergeTables(tables):
-            bigtable = None
-            for table in tables:
-                if bigtable == None:
-                    bigtable = table
-                else:
-                    bigtable = bigtable.append_column(table.field(1), table.columns[1])
 
-            return bigtable
             
 
 
