@@ -134,12 +134,18 @@ class SkyhookDM:
                     reader = pa.ipc.open_stream(stream)
                     for b in reader:
                         batches.append(b)
+                
+                #sort batches
+                def index(batch1, batch2):
+                    tb1 = pa.Table.from_batches([batch1.slice(0,1)])
+                    tb2 = pa.Table.from_batches([batch2.slice(0,1)])
+                    return tb1.columns[0][0] > tb2.columns[0][0]
+                
+                sorted(batches,index)
 
                 table = pa.Table.from_batches(batches)
                 tables.append(table)
 
-
-            # res = self._extendTables(tablestreams)
             res = tables
             return res
         
