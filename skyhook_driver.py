@@ -244,6 +244,7 @@ def writeDataset(file_urls, dstname, addr, dst_type = 'root'):
         stat_res_dict['last access time'] = stat_res.st_atime
         stat_res_dict['last modified time'] = stat_res.st_mtime
         stat_res_dict['last changed time'] = stat_res.st_ctime
+        stat_res_dict['name'] = filename
 
         #stat_json = json.dumps(stat_res_dict)
         #build objects and generate json file which dipicts the logical structure
@@ -306,6 +307,7 @@ def writeDataset(file_urls, dstname, addr, dst_type = 'root'):
     for item in metadata['files']:
         item['file_schema'] = res[i][1]
         item['file_attributes'] = res[i][0]
+        item['name'] = res[i][0]['name']
         total_size += int(res[i][0]['size'])
         i += 1
     
