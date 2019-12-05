@@ -106,8 +106,8 @@ class SkyhookDM:
             result = os.popen(prog + command).read()
             return result
 
-                
-        if 'File' in str(obj):
+
+        def fileQuery(obj, querystr):
             cmds = generateQueryCommand(obj, querystr)
             futures = []
             for command in cmds:
@@ -148,6 +148,11 @@ class SkyhookDM:
             res = self._mergeTables(tables)
 
             return res
+
+                
+        if 'File' in str(obj):
+            res = fileQuery(obj, querystr)
+            return res
         
         if 'Dataset' in str(obj):
 
@@ -171,8 +176,6 @@ class SkyhookDM:
             return tables
 
         
-
-
         return None
     
     def _mergeTables(self, tables):
@@ -184,19 +187,6 @@ class SkyhookDM:
                 bigtable = bigtable.append_column(table.field(1), table.columns[1])
 
         return bigtable
-    
-    def _extendTables(self, tablestreams):
-        table = None
-        batches = []
-        for tablestream in tablestreams:
-            reader = pa.ipc.open_stream(tablestream)
-            for b in reader:
-                batches.append(b)
-        
-        table = pa.Table.from_batches(batches)
-
-        return table
-
         
 
 
