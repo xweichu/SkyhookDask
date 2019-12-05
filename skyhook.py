@@ -139,6 +139,7 @@ class SkyhookDM:
                 def index(batch1, batch2):
                     tb1 = pa.Table.from_batches([batch1.slice(0,1)])
                     tb2 = pa.Table.from_batches([batch2.slice(0,1)])
+                    print(tb1.columns[0][0].as_py() > tb2.columns[0][0].as_py())
                     return tb1.columns[0][0].as_py() > tb2.columns[0][0].as_py()
                 
                 batches = sorted(batches,index)
