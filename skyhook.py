@@ -168,13 +168,54 @@ class SkyhookDM:
         if 'Dataset' in str(obj):
 
             rtfiles = obj.getFiles()
-            tables = []
+            global_tables = []
+            futures_set = []
 
             for rtfile in rtfiles:
-                table = fileQuery(rtfile, querystr)
-                tables.append(table)
+                cmds = generateQueryCommand(rtfile, querystr)
+                futures = []
+                for command in cmds:
+                    future = self.client.submit(exeQuery, command)
+                    futures.append(future)
+                futures_set.append(futures)
             
-            return tables
+            for futures in futures_set:
+
+                tablestreams = self.client.gather(futures)
+                tables = []
+
+                for tablestream in tablestreams:
+                    sizebf = None
+                    stream_length = len(tablestream)
+                    cursor = 0
+                    batches = []
+
+                    while True:
+                        if cursor == stream_length:
+                            break
+                        sizebf = tablestream[cursor:cursor+4]
+                        cursor = cursor + 4
+                        size = struct.unpack("<i",sizebf)[0]
+                        stream = tablestream[cursor:cursor+size]
+                        cursor = cursor + size
+                        reader = pa.ipc.open_stream(stream)
+                        for b in reader:
+                            batches.append(b)
+                    
+                    #sort batches
+                    def mykey(batch):
+                        tb = pa.Table.from_batches([batch.slice(0,1)])
+                        return tb.columns[0][0].as_py()
+                    
+                    batches = sorted(batches,key=mykey)
+
+                    table = pa.Table.from_batches(batches)
+                    tables.append(table)
+
+                res = _mergeTables(tables)
+                global_tables.append(res)
+                
+            return global_tables
         
         return None
     
